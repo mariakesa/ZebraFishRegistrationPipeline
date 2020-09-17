@@ -1,3 +1,8 @@
+'''
+Written by Fabian Kabus.
+https://github.com/thefabus
+'''
+
 import bioformats
 import deepdish as dd
 import h5py
