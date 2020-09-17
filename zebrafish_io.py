@@ -53,7 +53,6 @@ def lif_open(fn):
 
     return ir
 
-
 def lif_read_stack(fn):
     ir = lif_open(fn)
     img_i = lif_find_timeseries(fn)
@@ -67,3 +66,66 @@ def lif_read_stack(fn):
             stack[t, z] = ir.read(t=t, z=z, c=0, series=img_i, rescale=False)
 
     return stack, spacing
+
+def get_shape(fn, index=0):
+    """
+
+    :param fn: image file
+    :return: shape of that file
+    """
+    in_ext = os.path.splitext(fn)[1]
+
+    if in_ext == '.h5':
+        """
+        f = tables.open_file(fn)
+        return f.get_node('/stack').shape
+        """
+        img = load(fn)
+        return img.shape
+    elif in_ext == '.nrrd':
+        img = load(fn)
+        return img.shape
+    elif in_ext == '.lif':
+        metas = lif_get_metas(fn)
+        meta = metas[index]
+
+        shape = (
+            int(meta['SizeT']),
+            int(meta['SizeZ']),
+            int(meta['SizeY']),
+            int(meta['SizeX']),
+        )
+        order = meta['DimensionOrder']
+        spacing = tuple([float(meta['PhysicalSize%s' % c]) for c in 'XYZ'])
+
+        return shape, spacing
+
+    else:
+        raise UnsupportedFormatException('Input format "' + in_ext + '" is not supported.')
+
+
+def __sitkread(filename):
+     img = sitk.ReadImage(filename)
+     spacing = img.GetSpacing()
+     return sitk.GetArrayFromImage(img), spacing
+
+
+def __sitkwrite(filename, data, spacing):
+     img = sitk.GetImageFromArray(data)
+     img.SetSpacing(spacing)
+     sitk.WriteImage(img, filename)
+
+def save(fn, data, spacing):
+     out_ext = os.path.splitext(fn)[1]
+
+     if out_ext == '.nrrd':
+         __sitkwrite(fn, data, spacing)
+     elif out_ext == '.h5':
+         """
+         with tables.open_file(fn, mode='w') as f:
+             f.create_array('/', 'stack', data.astype(np.float32))
+             f.close()
+         """
+         __sitkwrite(fn, data, spacing)
+     else:
+         raise UnsupportedFormatException('Output format "' + out_ext + '" is not supported.')
