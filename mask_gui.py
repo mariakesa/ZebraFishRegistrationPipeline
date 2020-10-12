@@ -23,6 +23,8 @@ import time
 
 from matplotlib import image
 
+from pyqtgraph import Point
+
 class MainW(QtGui.QMainWindow):
     def __init__(self, image=None):
         super(MainW, self).__init__()
@@ -77,13 +79,7 @@ class MainW(QtGui.QMainWindow):
         self.show()
 
     def make_viewbox(self):
-        self.p0 = ViewBoxNoRightDrag(
-            parent=self,
-            lockAspect=True,
-            name="plot1",
-            border=[100, 100, 100],
-            invertY=True
-        )
+        self.p0 = pg.ViewBox(invertY=True)
         self.brush_size=3
         self.win.addItem(self.p0, 0, 0)
         self.p0.setMenuEnabled(False)
@@ -95,75 +91,13 @@ class MainW(QtGui.QMainWindow):
         self.scale = pg.ImageItem(viewbox=self.p0, parent=self)
         self.scale.setLevels([0,255])
         self.p0.scene().contextMenuItem = self.p0
-        #self.p0.setMouseEnabled(x=False,y=False)
+        self.p0.setMouseEnabled(x=False,y=False)
         self.Ly,self.Lx = 512,512
         self.p0.addItem(self.img)
         self.p0.addItem(self.layer)
         self.p0.addItem(self.scale)
 
 
-class ViewBoxNoRightDrag(pg.ViewBox):
-    def __init__(self, parent=None, border=None, lockAspect=False, enableMouse=True, invertY=False, enableMenu=True, name=None, invertX=False):
-        pg.ViewBox.__init__(self, None, border, lockAspect, enableMouse,
-                            invertY, enableMenu, name, invertX)
-        self.parent = parent
-        self.axHistoryPointer = -1
-
-    def keyPressEvent(self, ev):
-        """
-        This routine should capture key presses in the current view box.
-        The following events are implemented:
-        +/= : moves forward in the zooming stack (if it exists)
-        - : moves backward in the zooming stack (if it exists)
-        """
-        ev.accept()
-        if ev.text() == '-':
-            self.scaleBy([1.1, 1.1])
-        elif ev.text() in ['+', '=']:
-            self.scaleBy([0.9, 0.9])
-        else:
-            ev.ignore()
-
-    def mouseDragEvent(self, ev, axis=None):
-        ## if axis is specified, event will only affect that axis.
-        if self.parent is None or (self.parent is not None and not self.parent.in_stroke):
-            ev.accept()  ## we accept all buttons
-
-            pos = ev.pos()
-            lastPos = ev.lastPos()
-            dif = pos - lastPos
-            dif = dif * -1
-
-            ## Ignore axes if mouse is disabled
-            mouseEnabled = np.array(self.state['mouseEnabled'], dtype=np.float)
-            mask = mouseEnabled.copy()
-            if axis is not None:
-                mask[1-axis] = 0.0
-
-            ## Scale or translate based on mouse button
-            if ev.button() & (QtCore.Qt.LeftButton | QtCore.Qt.MidButton):
-                if self.state['mouseMode'] == pg.ViewBox.RectMode:
-                    if ev.isFinish():  ## This is the final move in the drag; change the view scale now
-                        #print "finish"
-                        self.rbScaleBox.hide()
-                        ax = QtCore.QRectF(Point(ev.buttonDownPos(ev.button())), Point(pos))
-                        ax = self.childGroup.mapRectFromParent(ax)
-                        self.showAxRect(ax)
-                        self.axHistoryPointer += 1
-                        self.axHistory = self.axHistory[:self.axHistoryPointer] + [ax]
-                    else:
-                        ## update shape of scale box
-                        self.updateScaleBox(ev.buttonDownPos(), ev.pos())
-                else:
-                    tr = dif*mask
-                    tr = self.mapToView(tr) - self.mapToView(Point(0,0))
-                    x = tr.x() if mask[0] == 1 else None
-                    y = tr.y() if mask[1] == 1 else None
-
-                    self._resetTarget()
-                    if x is not None or y is not None:
-                        self.translateBy(x=x, y=y)
-                    self.sigRangeChangedManually.emit(self.state['mouseEnabled'])
 
 class ImageDraw(pg.ImageItem):
     """
