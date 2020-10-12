@@ -89,11 +89,7 @@ class MainW(QtGui.QMainWindow):
         self.p0.scene().contextMenuItem = self.p0
         self.p0.setMouseEnabled(x=False,y=False)
         self.Ly,self.Lx = 512,512
-        kern = np.array([
-        [0.0, 0.5, 0.0],
-        [0.5, 1.0, 0.5],
-        [0.0, 0.5, 0.0]
-        ])
+        kern = np.ones((100,100))
         self.img.setDrawKernel(kern, mask=kern, center=(1,1), mode='add')
         self.p0.addItem(self.img)
 
@@ -131,6 +127,7 @@ class ImageDraw(pg.ImageItem):
             self.drawAt(ev.pos(), ev)
         '''
         print(ev.pos())
+        self.drawAt(ev.pos(), ev)
 
     def mouseClickEvent(self, ev):
         print(ev.pos())
