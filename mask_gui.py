@@ -24,12 +24,13 @@ import time
 from matplotlib import image
 
 from pyqtgraph import Point
+from collections.abc import Callable
 
 class MainW(QtGui.QMainWindow):
     def __init__(self, image=None):
         super(MainW, self).__init__()
 
-        pg.setConfigOptions(imageAxisOrder="row-major")
+        pg.setConfigOptions(imageAxisOrder="col-major")
         self.setGeometry(50, 50, 1200, 1000)
 
         self.setStyleSheet("QMainWindow {background: 'black';}")
@@ -79,17 +80,18 @@ class MainW(QtGui.QMainWindow):
         self.show()
 
     def make_viewbox(self):
-        self.p0 = pg.ViewBox(invertY=True)
+        self.p0 = pg.ViewBox()
         self.brush_size=3
         self.win.addItem(self.p0, 0, 0)
         self.p0.setMenuEnabled(False)
-        self.p0.setMouseEnabled(x=True, y=True)
+        #self.p0.setMouseEnabled(x=True, y=True)
+        self.p0.setAspectLocked(True)
         self.img = ImageDraw(viewbox=self.p0, parent=self)
         self.img.autoDownsample = False
-        self.p0.scene().contextMenuItem = self.p0
-        self.p0.setMouseEnabled(x=False,y=False)
+        #self.p0.scene().contextMenuItem = self.p0
+        #self.p0.setMouseEnabled(x=False,y=False)
         self.Ly,self.Lx = 512,512
-        kern = np.ones((100,100))
+        kern = 100*np.ones((10,10))
         self.img.setDrawKernel(kern, mask=kern, center=(1,1), mode='add')
         self.p0.addItem(self.img)
 
@@ -115,28 +117,71 @@ class ImageDraw(pg.ImageItem):
     def __init__(self, image=None, viewbox=None, parent=None, **kargs):
         super(ImageDraw, self).__init__()
 
+        self.autoDownsample = False
+        self.axisOrder = 'row-major'
+        self.removable = False
+
+        self.parent = parent
+        #kernel[1,1] = 1
+        #self.setDrawKernel(kernel_size=self.parent.brush_size)
+
     def mouseDragEvent(self, ev):
-        '''
         if ev.button() != QtCore.Qt.LeftButton:
             ev.ignore()
-            print(ev.pos())
             return
-        else:
-            #ev.accept()
-            print(ev.pos())
+        elif self.drawKernel is not None:
+            ev.accept()
             self.drawAt(ev.pos(), ev)
-        '''
-        print(ev.pos())
-        self.drawAt(ev.pos(), ev)
 
-    def mouseClickEvent(self, ev):
-        print(ev.pos())
+    def drawAt(self, pos, ev=None):
+        pos = [int(pos.y()), int(pos.x())]
+        dk = self.drawKernel
+        kc = self.drawKernelCenter
+        sx = [0,dk.shape[0]]
+        sy = [0,dk.shape[1]]
+        tx = [pos[0] - kc[0], pos[0] - kc[0]+ dk.shape[0]]
+        ty = [pos[1] - kc[1], pos[1] - kc[1]+ dk.shape[1]]
+
+        for i in [0,1]:
+            dx1 = -min(0, tx[i])
+            dx2 = min(0, self.image.shape[0]-tx[i])
+            tx[i] += dx1+dx2
+            sx[i] += dx1+dx2
+
+            dy1 = -min(0, ty[i])
+            dy2 = min(0, self.image.shape[1]-ty[i])
+            ty[i] += dy1+dy2
+            sy[i] += dy1+dy2
+
+        ts = (slice(tx[0],tx[1]), slice(ty[0],ty[1]))
+        ss = (slice(sx[0],sx[1]), slice(sy[0],sy[1]))
+        mask = self.drawMask
+        src = dk
+
+        if isinstance(self.drawMode, Callable):
+            self.drawMode(dk, self.image, mask, ss, ts, ev)
+        else:
+            src = src[ss]
+            if self.drawMode == 'set':
+                if mask is not None:
+                    mask = mask[ss]
+                    self.image[ts] = self.image[ts] * (1-mask) + src * mask
+                else:
+                    self.image[ts] = src
+            elif self.drawMode == 'add':
+                self.image[ts] += src
+            else:
+                raise Exception("Unknown draw mode '%s'" % self.drawMode)
+            self.updateImage()
+
+    #def mouseClickEvent(self, ev):
+        #print(ev.pos())
 
 
 
 def run(image=None):
     # Always start by initializing Qt (only once per application)
-    warnings.filterwarnings("ignore")
+    #warnings.filterwarnings("ignore")
     app = QtGui.QApplication(sys.argv)
 
     main_window=MainW(image=image)
