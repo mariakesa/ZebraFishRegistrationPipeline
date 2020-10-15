@@ -43,7 +43,7 @@ class MainW(QtGui.QMainWindow):
         self.win = pg.GraphicsLayoutWidget()
         #self.l0.addWidget(self.win, 0,3, b, 20)
 
-        self.l0.addWidget(self.win)
+        self.l0.addWidget(self.win,0,10)
 
 
         #self.show()
@@ -51,6 +51,8 @@ class MainW(QtGui.QMainWindow):
         self.load_image()
 
         self.make_viewbox()
+
+        self.make_buttons()
 
         self.set_image()
 
@@ -80,9 +82,9 @@ class MainW(QtGui.QMainWindow):
         self.show()
 
     def make_viewbox(self):
-        self.p0 = pg.ViewBox()
+        self.p0 = pg.ViewBox(invertY=True)
         self.brush_size=3
-        self.win.addItem(self.p0, 0, 0)
+        self.win.addItem(self.p0, 3, 0)
         self.p0.setMenuEnabled(False)
         #self.p0.setMouseEnabled(x=True, y=True)
         self.p0.setAspectLocked(True)
@@ -95,6 +97,10 @@ class MainW(QtGui.QMainWindow):
         self.img.setDrawKernel(kern, mask=kern, center=(1,1), mode='add')
         self.p0.addItem(self.img)
 
+    def make_buttons(self):
+        b=0
+        segment_button=QtGui.QPushButton('Segment')
+        self.l0.addWidget(segment_button, b, 0,1,1)
 
 
 class ImageDraw(pg.ImageItem):
@@ -125,11 +131,14 @@ class ImageDraw(pg.ImageItem):
         #kernel[1,1] = 1
         #self.setDrawKernel(kernel_size=self.parent.brush_size)
 
+
+
     def mouseDragEvent(self, ev):
         if ev.button() != QtCore.Qt.LeftButton:
             ev.ignore()
             return
         elif self.drawKernel is not None:
+            print(ev.pos())
             ev.accept()
             self.drawAt(ev.pos(), ev)
 
