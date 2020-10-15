@@ -99,8 +99,13 @@ class MainW(QtGui.QMainWindow):
 
     def make_buttons(self):
         b=0
-        segment_button=QtGui.QPushButton('Segment')
-        self.l0.addWidget(segment_button, b, 0,1,1)
+        self.segment_button=QtGui.QPushButton('Segment')
+        self.l0.addWidget(self.segment_button, b, 0,1,1)
+        self.segment_button.clicked.connect(lambda: self.segment())
+
+    def segment(self):
+        print(self.img.x_lst)
+        print(self.img.y_lst)
 
 
 class ImageDraw(pg.ImageItem):
@@ -130,6 +135,8 @@ class ImageDraw(pg.ImageItem):
         self.parent = parent
         #kernel[1,1] = 1
         #self.setDrawKernel(kernel_size=self.parent.brush_size)
+        self.x_lst=[]
+        self.y_lst=[]
 
 
 
@@ -138,9 +145,12 @@ class ImageDraw(pg.ImageItem):
             ev.ignore()
             return
         elif self.drawKernel is not None:
-            print(ev.pos())
+            #print(ev.pos())
             ev.accept()
             self.drawAt(ev.pos(), ev)
+            self.x_lst.append(ev.pos().x())
+            self.y_lst.append(ev.pos().y())
+
 
     def drawAt(self, pos, ev=None):
         pos = [int(pos.y()), int(pos.x())]
@@ -185,6 +195,8 @@ class ImageDraw(pg.ImageItem):
 
     #def mouseClickEvent(self, ev):
         #print(ev.pos())
+
+
 
 
 
