@@ -1,5 +1,8 @@
 '''
 Code inspired and adapted from Carsen Stringer CellPose https://github.com/MouseLand/cellpose/blob/master/cellpose/gui.py
+
+https://stackoverflow.com/questions/50847827/how-can-i-select-the-pixels-that-fall-within-a-contour-in-an-image-represented-b
+https://stackoverflow.com/questions/31542843/inpolygon-for-python-examples-of-matplotlib-path-path-contains-points-method
 '''
 
 import sys, os, pathlib, warnings, datetime, tempfile, glob, time
@@ -22,6 +25,7 @@ import h5py
 import time
 
 from matplotlib import image
+import matplotlib.path
 
 from pyqtgraph import Point
 from collections.abc import Callable
@@ -92,7 +96,6 @@ class MainW(QtGui.QMainWindow):
         self.img.autoDownsample = False
         #self.p0.scene().contextMenuItem = self.p0
         #self.p0.setMouseEnabled(x=False,y=False)
-        self.Ly,self.Lx = 512,512
         kern = 100*np.ones((10,10))
         self.img.setDrawKernel(kern, mask=kern, center=(1,1), mode='add')
         self.p0.addItem(self.img)
@@ -104,8 +107,21 @@ class MainW(QtGui.QMainWindow):
         self.segment_button.clicked.connect(lambda: self.segment())
 
     def segment(self):
-        print(self.img.x_lst)
-        print(self.img.y_lst)
+        print(self.img.pt_lst)
+
+        x=np.arange(0,1024)
+        y=np.arange(0,1024)
+        xv, yv = np.meshgrid(x, y, indexing='xy')
+        points = np.hstack((xv.reshape((-1,1)), yv.reshape((-1,1))))
+
+        path = matplotlib.path.Path(self.img.pt_lst)
+        mask = path.contains_points(points)
+        mask=mask.reshape(1024,1024)
+
+        print(mask.shape)
+        self.data[mask==False]=0
+        self.img.setImage(self.data,autoLevels=False, lut=None,levels=[0,1])
+
 
 
 class ImageDraw(pg.ImageItem):
@@ -135,8 +151,7 @@ class ImageDraw(pg.ImageItem):
         self.parent = parent
         #kernel[1,1] = 1
         #self.setDrawKernel(kernel_size=self.parent.brush_size)
-        self.x_lst=[]
-        self.y_lst=[]
+        self.pt_lst=[]
 
 
 
@@ -148,8 +163,7 @@ class ImageDraw(pg.ImageItem):
             #print(ev.pos())
             ev.accept()
             self.drawAt(ev.pos(), ev)
-            self.x_lst.append(ev.pos().x())
-            self.y_lst.append(ev.pos().y())
+            self.pt_lst.append([ev.pos().x(),ev.pos().y()])
 
 
     def drawAt(self, pos, ev=None):
