@@ -39,6 +39,12 @@ class MainW(QtGui.QMainWindow):
 
         self.setStyleSheet("QMainWindow {background: 'black';}")
 
+        #Data and output arrays
+        self.mask_arr=np.zeros((21,1024,1204))
+
+        #Plane ind
+        self.plane_ind=0
+
         self.cwidget = QtGui.QWidget(self)
         self.l0 = QtGui.QGridLayout()
         self.cwidget.setLayout(self.l0)
@@ -57,6 +63,10 @@ class MainW(QtGui.QMainWindow):
         self.make_viewbox()
 
         self.make_buttons()
+
+        self.make_plane_input()
+
+        self.make_plane_text_box()
 
         self.set_image()
 
@@ -101,10 +111,17 @@ class MainW(QtGui.QMainWindow):
         self.p0.addItem(self.img)
 
     def make_buttons(self):
-        b=0
         self.segment_button=QtGui.QPushButton('Segment')
-        self.l0.addWidget(self.segment_button, b, 0,1,1)
+        #self.segment_button.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+        self.l0.addWidget(self.segment_button, 1, 0,2,2)
         self.segment_button.clicked.connect(lambda: self.segment())
+
+    def make_plane_input(self):
+        self.plane_input=QtGui.QLineEdit(self)
+        self.plane_input.setText("0")
+        self.plane_input.setFixedWidth(35)
+        self.plane_input.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignTop)
+        self.l0.addWidget(self.plane_input, 0, 0,2,1)
 
     def segment(self):
         print(self.img.pt_lst)
@@ -120,26 +137,20 @@ class MainW(QtGui.QMainWindow):
 
         print(mask.shape)
         self.data[mask==False]=0
-        self.img.setImage(self.data,autoLevels=False, lut=None,levels=[0,1])
+        self.img.setImage(self.data,autoLevels=False, lut=None,levels=[0,255])
+
+    def make_plane_text_box(self):
+        self.plane_text = QtGui.QTextEdit()
+        cursor = self.plane_text.textCursor()
+        cursor.movePosition(cursor.End)
+        cursor.insertText('>>>ERROR<<<\n')
+        cursor.insertText('Hello')
+        self.plane_text.ensureCursorVisible()
+        self.l0.addWidget(self.plane_text, 3,0,5,5)
 
 
 
 class ImageDraw(pg.ImageItem):
-    """
-    **Bases:** :class:`GraphicsObject <pyqtgraph.GraphicsObject>`
-    GraphicsObject displaying an image. Optimized for rapid update (ie video display).
-    This item displays either a 2D numpy array (height, width) or
-    a 3D array (height, width, RGBa). This array is optionally scaled (see
-    :func:`setLevels <pyqtgraph.ImageItem.setLevels>`) and/or colored
-    with a lookup table (see :func:`setLookupTable <pyqtgraph.ImageItem.setLookupTable>`)
-    before being displayed.
-    ImageItem is frequently used in conjunction with
-    :class:`HistogramLUTItem <pyqtgraph.HistogramLUTItem>` or
-    :class:`HistogramLUTWidget <pyqtgraph.HistogramLUTWidget>` to provide a GUI
-    for controlling the levels and lookup table used to display the image.
-    """
-
-
 
     def __init__(self, image=None, viewbox=None, parent=None, **kargs):
         super(ImageDraw, self).__init__()
