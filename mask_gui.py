@@ -73,26 +73,25 @@ class MainW(QtGui.QMainWindow):
         self.win.show()
 
     def load_image(self):
+        inc_ind=0
+        n_planes=21
         filename='C:/Users/koester_lab/Documents/Maria/registered/fish2_6dpf_medium_aligned.h5'
         filename_='C:/Users/koester_lab/Documents/im.jpg'
         with h5py.File(filename, "r") as f:
             # List all groups
             print("Keys: %s" % f.keys())
             start=time.time()
-            data=f['data'][100,10,:,:]
+            data=f['data'][inc_ind,:,:,:]
             end=time.time()
             print('Time to load file: ',end-start)
             print(data.shape)
         self.data=np.array(data).astype('float64')
-        #self.data=image.imread(filename_)
-        print(np.max(self.data))
-        print(np.min(self.data))
-        self.data *= 255.0/self.data.max()
-        print(np.max(self.data))
-        print(np.min(self.data))
+        print(self.data.shape)
+        for j in range(0,21):
+            self.data[j,:,:] *= 255.0/self.data[j,:,:].max()
 
     def set_image(self):
-        self.img.setImage(self.data, autoLevels=False, lut=None,levels=[0,255])
+        self.img.setImage(self.data[0,:,:], autoLevels=False, lut=None,levels=[0,255])
         self.show()
 
     def make_viewbox(self):
@@ -121,7 +120,14 @@ class MainW(QtGui.QMainWindow):
         self.plane_input.setText("0")
         self.plane_input.setFixedWidth(35)
         self.plane_input.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignTop)
+        self.plane_input.returnPressed.connect(lambda: self.set_plane_ind_image())
         self.l0.addWidget(self.plane_input, 0, 0,2,1)
+
+    def set_plane_ind_image(self):
+        ind=int(self.plane_input.text())
+        self.img.setImage(self.data[ind,:,:], autoLevels=False, lut=None,levels=[0,255])
+        self.show()
+
 
     def segment(self):
         print(self.img.pt_lst)
