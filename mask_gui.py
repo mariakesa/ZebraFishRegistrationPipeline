@@ -40,7 +40,8 @@ class MainW(QtGui.QMainWindow):
         self.setStyleSheet("QMainWindow {background: 'black';}")
 
         #Data and output arrays
-        self.mask_arr=np.zeros((21,1024,1204))
+        self.mask_arr=np.zeros((21,1024,1024)).astype('float64')
+
 
         #Plane ind
         self.plane_ind=0
@@ -84,11 +85,10 @@ class MainW(QtGui.QMainWindow):
             data=f['data'][inc_ind,:,:,:]
             end=time.time()
             print('Time to load file: ',end-start)
-            print(data.shape)
         self.data=np.array(data).astype('float64')
-        print(self.data.shape)
         for j in range(0,21):
             self.data[j,:,:] *= 255.0/self.data[j,:,:].max()
+        self.data_masked=self.data.copy()
 
     def set_image(self):
         self.img.setImage(self.data[0,:,:], autoLevels=False, lut=None,levels=[0,255])
@@ -124,13 +124,12 @@ class MainW(QtGui.QMainWindow):
         self.l0.addWidget(self.plane_input, 0, 0,2,1)
 
     def set_plane_ind_image(self):
-        ind=int(self.plane_input.text())
-        self.img.setImage(self.data[ind,:,:], autoLevels=False, lut=None,levels=[0,255])
+        self.plane_ind=int(self.plane_input.text())
+        self.img.setImage(self.data[self.plane_ind,:,:], autoLevels=False, lut=None,levels=[0,255])
         self.show()
 
 
     def segment(self):
-        print(self.img.pt_lst)
 
         x=np.arange(0,1024)
         y=np.arange(0,1024)
@@ -139,11 +138,13 @@ class MainW(QtGui.QMainWindow):
 
         path = matplotlib.path.Path(self.img.pt_lst)
         mask = path.contains_points(points)
-        mask=mask.reshape(1024,1024)
+        mask=mask.reshape(1024,1024).astype('float64')
 
-        print(mask.shape)
-        self.data[mask==False]=0
-        self.img.setImage(self.data,autoLevels=False, lut=None,levels=[0,255])
+        self.data_masked[self.plane_ind,:,:][mask==0]=0
+
+        self.mask_arr[self.plane_ind]=mask
+
+        self.img.setImage(self.data_masked[self.plane_ind,:,:],autoLevels=False, lut=None,levels=[0,255])
 
     def make_plane_text_box(self):
         self.plane_text = QtGui.QTextEdit()
@@ -151,8 +152,12 @@ class MainW(QtGui.QMainWindow):
         cursor.movePosition(cursor.End)
         cursor.insertText('>>>ERROR<<<\n')
         cursor.insertText('Hello')
+        print(self.plane_text.toPlainText())
         self.plane_text.ensureCursorVisible()
         self.l0.addWidget(self.plane_text, 3,0,5,5)
+
+    def update_text_box(self):
+        pass
 
 
 
