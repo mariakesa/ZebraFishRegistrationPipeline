@@ -125,7 +125,7 @@ class MainW(QtGui.QMainWindow):
 
     def set_plane_ind_image(self):
         self.plane_ind=int(self.plane_input.text())
-        self.img.setImage(self.data[self.plane_ind,:,:], autoLevels=False, lut=None,levels=[0,255])
+        self.img.setImage(self.data_masked[self.plane_ind,:,:], autoLevels=False, lut=None,levels=[0,255])
         self.show()
 
 
