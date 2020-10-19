@@ -118,7 +118,7 @@ class MainW(QtGui.QMainWindow):
         self.img.autoDownsample = False
         #self.p0.scene().contextMenuItem = self.p0
         #self.p0.setMouseEnabled(x=False,y=False)
-        kern = 100*np.ones((7,7))
+        kern = 255*np.ones((7,7))
         self.img.setDrawKernel(kern, mask=kern, center=(1,1), mode='add')
         self.p0.addItem(self.img)
 
