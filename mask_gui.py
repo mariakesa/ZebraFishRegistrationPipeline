@@ -6,18 +6,13 @@ https://stackoverflow.com/questions/31542843/inpolygon-for-python-examples-of-ma
 '''
 
 import sys, os, pathlib, warnings, datetime, tempfile, glob, time
-import gc
-from natsort import natsorted
-from tqdm import tqdm
+
 
 from PyQt5 import QtGui, QtCore, Qt, QtWidgets
 import pyqtgraph as pg
-from pyqtgraph import GraphicsScene
+
 
 import numpy as np
-import cv2
-from scipy.ndimage import gaussian_filter
-
 import sys
 
 import h5py
