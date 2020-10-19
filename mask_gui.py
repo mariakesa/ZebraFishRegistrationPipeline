@@ -159,12 +159,14 @@ class MainW(QtGui.QMainWindow):
 
     def update_text_box(self):
         text=self.plane_text.toPlainText()+'\n'+'Masked plane nr: '+str(self.plane_ind)
-        splt=text.split('\n')
-        sortd=sorted(splt)
+        #splt=text.split('\n')
+        nrs=[int(s) for s in text.split() if s.isdigit()]
+        sortd=sorted(nrs)
+        print(sortd)
         self.plane_text.clear()
-        for line in sortd:
+        for nr in sortd:
             self.cursor.movePosition(self.cursor.End)
-            self.cursor.insertText('\n'+line)
+            self.cursor.insertText('\n'+'Masked plane nr: '+str(nr))
             self.plane_text.ensureCursorVisible()
 
 
