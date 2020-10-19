@@ -48,13 +48,14 @@ class MainW(QtGui.QMainWindow):
 
         self.cwidget = QtGui.QWidget(self)
         self.l0 = QtGui.QGridLayout()
+        #self.l0.setContentsMargins(0, 0, 0, 0)
         self.cwidget.setLayout(self.l0)
         self.setCentralWidget(self.cwidget)
 
         self.win = pg.GraphicsLayoutWidget()
         #self.l0.addWidget(self.win, 0,3, b, 20)
 
-        self.l0.addWidget(self.win,0,10)
+        self.l0.addWidget(self.win,0,0,40,10)
 
 
         #self.show()
@@ -96,9 +97,9 @@ class MainW(QtGui.QMainWindow):
     def make_viewbox(self):
         self.p0 = pg.ViewBox(invertY=True)
         self.brush_size=3
-        self.win.addItem(self.p0, 3, 0)
+        self.win.addItem(self.p0, 0, 0)
         self.p0.setMenuEnabled(False)
-        #self.p0.setMouseEnabled(x=True, y=True)
+        self.p0.setMouseEnabled(x=True, y=True)
         self.p0.setAspectLocked(True)
         self.img = ImageDraw(viewbox=self.p0, parent=self)
         self.img.autoDownsample = False
@@ -111,20 +112,25 @@ class MainW(QtGui.QMainWindow):
     def make_buttons(self):
         self.segment_button=QtGui.QPushButton('Segment')
         #self.segment_button.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
-        self.l0.addWidget(self.segment_button, 1, 0,2,2)
+        self.l0.addWidget(self.segment_button, 52, 0,2,2)
+        self.l0.setColumnStretch(2,1)
         self.segment_button.clicked.connect(lambda: self.segment())
+        self.clear_button=QtGui.QPushButton('Clear')
+        self.l0.addWidget(self.clear_button, 54, 0,2,2)
+        self.clear_button.clicked.connect(lambda: self.clear())
         self.mask_all_button=QtGui.QPushButton('Mask all')
         #self.segment_button.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
-        self.l0.addWidget(self.mask_all_button, 8, 0,2,2)
+        self.l0.addWidget(self.mask_all_button, 56, 0,2,2)
         self.mask_all_button.clicked.connect(lambda: self.mask_all_data())
 
     def make_plane_input(self):
         self.plane_input=QtGui.QLineEdit(self)
         self.plane_input.setText("0")
         self.plane_input.setFixedWidth(35)
-        self.plane_input.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignTop)
+        #self.plane_input.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignTop)
         self.plane_input.returnPressed.connect(lambda: self.set_plane_ind_image())
-        self.l0.addWidget(self.plane_input, 0, 0,2,1)
+        self.l0.addWidget(self.plane_input, 50, 0,1,1)
+        self.l0.setVerticalSpacing(1)
 
     def set_plane_ind_image(self):
         self.plane_ind=int(self.plane_input.text())
@@ -157,7 +163,7 @@ class MainW(QtGui.QMainWindow):
         self.plane_text = QtGui.QTextEdit()
         self.cursor = self.plane_text.textCursor()
         self.plane_text.ensureCursorVisible()
-        self.l0.addWidget(self.plane_text, 3,0,5,5)
+        self.l0.addWidget(self.plane_text, 58,0,5,1)
 
     def update_text_box(self):
         text=self.plane_text.toPlainText()+'\n'+'Masked plane nr: '+str(self.plane_ind)
@@ -190,6 +196,10 @@ class MainW(QtGui.QMainWindow):
         for_segmentation.create_dataset('data', data=data)
         for_segmentation.close()
 
+    def clear(self):
+        self.data_masked[self.plane_ind,:,:]=self.data[self.plane_ind,:,:]
+        self.img.pt_lst=[]
+        self.img.setImage(self.data_masked[self.plane_ind,:,:],autoLevels=False, lut=None,levels=[0,255])
 
 
 
