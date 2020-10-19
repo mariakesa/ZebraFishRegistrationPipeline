@@ -151,6 +151,8 @@ class MainW(QtGui.QMainWindow):
 
         self.update_text_box()
 
+        self.img.pt_lst=[]
+
     def make_plane_text_box(self):
         self.plane_text = QtGui.QTextEdit()
         self.cursor = self.plane_text.textCursor()
@@ -162,7 +164,6 @@ class MainW(QtGui.QMainWindow):
         #splt=text.split('\n')
         nrs=[int(s) for s in text.split() if s.isdigit()]
         sortd=sorted(nrs)
-        print(sortd)
         self.plane_text.clear()
         for nr in sortd:
             self.cursor.movePosition(self.cursor.End)
