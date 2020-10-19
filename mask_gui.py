@@ -76,9 +76,8 @@ class MainW(QtGui.QMainWindow):
     def load_image(self):
         inc_ind=0
         n_planes=21
-        filename='C:/Users/koester_lab/Documents/Maria/registered/fish2_6dpf_medium_aligned.h5'
-        filename_='C:/Users/koester_lab/Documents/im.jpg'
-        with h5py.File(filename, "r") as f:
+        self.filename='C:/Users/koester_lab/Documents/Maria/registered/fish17_6dpf_medium_aligned.h5'
+        with h5py.File(self.filename, "r") as f:
             # List all groups
             print("Keys: %s" % f.keys())
             start=time.time()
@@ -114,6 +113,10 @@ class MainW(QtGui.QMainWindow):
         #self.segment_button.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
         self.l0.addWidget(self.segment_button, 1, 0,2,2)
         self.segment_button.clicked.connect(lambda: self.segment())
+        self.mask_all_button=QtGui.QPushButton('Mask all')
+        #self.segment_button.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+        self.l0.addWidget(self.mask_all_button, 8, 0,2,2)
+        self.mask_all_button.clicked.connect(lambda: self.mask_all_data())
 
     def make_plane_input(self):
         self.plane_input=QtGui.QLineEdit(self)
@@ -150,14 +153,33 @@ class MainW(QtGui.QMainWindow):
         self.plane_text = QtGui.QTextEdit()
         cursor = self.plane_text.textCursor()
         cursor.movePosition(cursor.End)
-        cursor.insertText('>>>ERROR<<<\n')
-        cursor.insertText('Hello')
+        cursor.insertText('Hello:-)')
         print(self.plane_text.toPlainText())
         self.plane_text.ensureCursorVisible()
         self.l0.addWidget(self.plane_text, 3,0,5,5)
 
     def update_text_box(self):
         pass
+
+    def mask_all_data(self):
+        with h5py.File(self.filename, "r+") as f:
+            # List all groups
+            print("Keys: %s" % f.keys())
+            start=time.time()
+            data=f['data'][:]
+            end=time.time()
+            print('Time to load file: ',end-start)
+        start=time.time()
+        for plane_ind in range(21):
+            for time_point in range(1800):
+                data[time_point,plane_ind,:,:][self.mask_arr[plane_ind,:,:]==0]=0
+                #print('SUCCESS!')
+        end=time.time()
+        print('Time for masking: ', end-start)
+        for_segmentation = h5py.File('data.h5', 'w')
+        for_segmentation.create_dataset('data', data=data)
+        for_segmentation.close()
+
 
 
 
