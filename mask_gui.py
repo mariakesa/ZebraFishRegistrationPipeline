@@ -149,17 +149,24 @@ class MainW(QtGui.QMainWindow):
 
         self.img.setImage(self.data_masked[self.plane_ind,:,:],autoLevels=False, lut=None,levels=[0,255])
 
+        self.update_text_box()
+
     def make_plane_text_box(self):
         self.plane_text = QtGui.QTextEdit()
-        cursor = self.plane_text.textCursor()
-        cursor.movePosition(cursor.End)
-        cursor.insertText('Hello:-)')
-        print(self.plane_text.toPlainText())
+        self.cursor = self.plane_text.textCursor()
         self.plane_text.ensureCursorVisible()
         self.l0.addWidget(self.plane_text, 3,0,5,5)
 
     def update_text_box(self):
-        pass
+        text=self.plane_text.toPlainText()+'\n'+'Masked plane nr: '+str(self.plane_ind)
+        splt=text.split('\n')
+        sortd=sorted(splt)
+        self.plane_text.clear()
+        for line in sortd:
+            self.cursor.movePosition(self.cursor.End)
+            self.cursor.insertText('\n'+line)
+            self.plane_text.ensureCursorVisible()
+
 
     def mask_all_data(self):
         with h5py.File(self.filename, "r+") as f:
