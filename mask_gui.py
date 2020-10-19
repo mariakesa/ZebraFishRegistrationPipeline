@@ -189,6 +189,17 @@ class MainW(QtGui.QMainWindow):
             self.cursor.insertText('\n'+'Masked plane nr: '+str(nr))
             self.plane_text.ensureCursorVisible()
 
+    def delete_from_text_box(self):
+        text=self.plane_text.toPlainText()+'\n'+'Masked plane nr: '+str(self.plane_ind)
+        #splt=text.split('\n')
+        nrs=[int(s) for s in text.split() if s.isdigit() and s!=str(self.plane_ind)]
+        sortd=sorted(nrs)
+        self.plane_text.clear()
+        for nr in sortd:
+            self.cursor.movePosition(self.cursor.End)
+            self.cursor.insertText('\n'+'Masked plane nr: '+str(nr))
+            self.plane_text.ensureCursorVisible()
+
 
     def mask_all_data(self):
         with h5py.File(self.filename, "r+") as f:
@@ -214,6 +225,8 @@ class MainW(QtGui.QMainWindow):
         self.img.pt_lst=[]
         #self.img.clear()
         self.img.setImage(self.data_masked[self.plane_ind,:,:],autoLevels=False,levels=[0,255])
+
+        self.delete_from_text_box()
 
 
 
