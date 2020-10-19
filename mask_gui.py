@@ -30,6 +30,8 @@ import matplotlib.path
 from pyqtgraph import Point
 from collections.abc import Callable
 
+import copy
+
 class MainW(QtGui.QMainWindow):
     def __init__(self, image=None):
         super(MainW, self).__init__()
@@ -88,10 +90,10 @@ class MainW(QtGui.QMainWindow):
         self.data=np.array(data).astype('float64')
         for j in range(0,21):
             self.data[j,:,:] *= 255.0/self.data[j,:,:].max()
-        self.data_masked=self.data.copy()
+        self.data_masked=copy.deepcopy(self.data)
 
     def set_image(self):
-        self.img.setImage(self.data[0,:,:], autoLevels=False, lut=None,levels=[0,255])
+        self.img.setImage(self.data_masked[0,:,:], autoLevels=False, lut=None,levels=[0,255])
         self.show()
 
     def make_viewbox(self):
@@ -117,7 +119,7 @@ class MainW(QtGui.QMainWindow):
         self.segment_button.clicked.connect(lambda: self.segment())
         self.clear_button=QtGui.QPushButton('Clear')
         self.l0.addWidget(self.clear_button, 54, 0,2,2)
-        self.clear_button.clicked.connect(lambda: self.clear())
+        self.clear_button.clicked.connect(lambda: self.clear_img())
         self.mask_all_button=QtGui.QPushButton('Mask all')
         #self.segment_button.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
         self.l0.addWidget(self.mask_all_button, 56, 0,2,2)
@@ -196,9 +198,10 @@ class MainW(QtGui.QMainWindow):
         for_segmentation.create_dataset('data', data=data)
         for_segmentation.close()
 
-    def clear(self):
-        self.data_masked[self.plane_ind,:,:]=self.data[self.plane_ind,:,:]
+    def clear_img(self):
+        self.data_masked[self.plane_ind,:,:]=self.data[self.plane_ind,:,:].copy()
         self.img.pt_lst=[]
+        #self.img.clear()
         self.img.setImage(self.data_masked[self.plane_ind,:,:],autoLevels=False, lut=None,levels=[0,255])
 
 
