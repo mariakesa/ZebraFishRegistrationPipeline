@@ -32,6 +32,10 @@ from collections.abc import Callable
 
 import copy
 
+from skimage import exposure
+
+from matplotlib import cm
+
 class MainW(QtGui.QMainWindow):
     def __init__(self, image=None):
         super(MainW, self).__init__()
@@ -41,9 +45,16 @@ class MainW(QtGui.QMainWindow):
 
         self.setStyleSheet("QMainWindow {background: 'black';}")
 
+        fish_int=17
+        self.filename='C:/Users/koester_lab/Documents/Maria/registered/fish'+str(fish_int)+'_6dpf_medium_aligned.h5'
+        self.save_mask_filename='C:/Users/koester_lab/Documents/Maria/masked/fish'+str(fish_int)+'_6dpf_medium_masked.h5'
+
         #Data and output arrays
         self.mask_arr=np.zeros((21,1024,1024)).astype('float64')
 
+        colormap = cm.get_cmap("bwr")
+        colormap._init()
+        self.lut = 255*(colormap._lut).view(np.ndarray)[:255]#.astype(np.ubyte)
 
         #Plane ind
         self.plane_ind=0
@@ -79,7 +90,6 @@ class MainW(QtGui.QMainWindow):
     def load_image(self):
         inc_ind=0
         n_planes=21
-        self.filename='C:/Users/koester_lab/Documents/Maria/registered/fish17_6dpf_medium_aligned.h5'
         with h5py.File(self.filename, "r") as f:
             # List all groups
             print("Keys: %s" % f.keys())
@@ -89,11 +99,12 @@ class MainW(QtGui.QMainWindow):
             print('Time to load file: ',end-start)
         self.data=np.array(data).astype('float64')
         for j in range(0,21):
-            self.data[j,:,:] *= 255.0/self.data[j,:,:].max()
+            self.data[j,:,:] *= 800.0/self.data[j,:,:].max()
         self.data_masked=copy.deepcopy(self.data)
 
     def set_image(self):
-        self.img.setImage(self.data_masked[0,:,:], autoLevels=False, lut=None,levels=[0,255])
+        self.img.setImage(self.data_masked[0,:,:], autoLevels=False, levels=[0,255])
+        self.img.setLookupTable(self.lut)
         self.show()
 
     def make_viewbox(self):
@@ -107,7 +118,7 @@ class MainW(QtGui.QMainWindow):
         self.img.autoDownsample = False
         #self.p0.scene().contextMenuItem = self.p0
         #self.p0.setMouseEnabled(x=False,y=False)
-        kern = 100*np.ones((10,10))
+        kern = 100*np.ones((7,7))
         self.img.setDrawKernel(kern, mask=kern, center=(1,1), mode='add')
         self.p0.addItem(self.img)
 
@@ -136,7 +147,7 @@ class MainW(QtGui.QMainWindow):
 
     def set_plane_ind_image(self):
         self.plane_ind=int(self.plane_input.text())
-        self.img.setImage(self.data_masked[self.plane_ind,:,:], autoLevels=False, lut=None,levels=[0,255])
+        self.img.setImage(self.data_masked[self.plane_ind,:,:], autoLevels=False, lut=self.lut,levels=[0,255])
         self.show()
 
 
@@ -155,7 +166,7 @@ class MainW(QtGui.QMainWindow):
 
         self.mask_arr[self.plane_ind]=mask
 
-        self.img.setImage(self.data_masked[self.plane_ind,:,:],autoLevels=False, lut=None,levels=[0,255])
+        self.img.setImage(self.data_masked[self.plane_ind,:,:],autoLevels=False, lut=self.lut,levels=[0,255])
 
         self.update_text_box()
 
@@ -202,7 +213,8 @@ class MainW(QtGui.QMainWindow):
         self.data_masked[self.plane_ind,:,:]=self.data[self.plane_ind,:,:].copy()
         self.img.pt_lst=[]
         #self.img.clear()
-        self.img.setImage(self.data_masked[self.plane_ind,:,:],autoLevels=False, lut=None,levels=[0,255])
+        self.img.setImage(self.data_masked[self.plane_ind,:,:],autoLevels=False,levels=[0,255])
+
 
 
 
@@ -276,6 +288,22 @@ class ImageDraw(pg.ImageItem):
 
     #def mouseClickEvent(self, ev):
         #print(ev.pos())
+
+    def setLookupTable(self, lut, update=True):
+        """
+        Set the lookup table (numpy array) to use for this image. (see
+        :func:`makeARGB <pyqtgraph.makeARGB>` for more information on how this is used).
+        Optionally, lut can be a callable that accepts the current image as an
+        argument and returns the lookup table to use.
+
+        Ordinarily, this table is supplied by a :class:`HistogramLUTItem <pyqtgraph.HistogramLUTItem>`
+        or :class:`GradientEditorItem <pyqtgraph.GradientEditorItem>`.
+        """
+        if lut is not self.lut:
+            self.lut = lut
+            self._effectiveLut = None
+            if update:
+                self.updateImage()
 
 
 
