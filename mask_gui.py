@@ -42,7 +42,9 @@ class MainW(QtGui.QMainWindow):
 
         fish_int=17
         self.filename='C:/Users/koester_lab/Documents/Maria/registered/fish'+str(fish_int)+'_6dpf_medium_aligned.h5'
-        self.save_mask_filename='C:/Users/koester_lab/Documents/Maria/masked/fish'+str(fish_int)+'_6dpf_medium_masked.h5'
+        self.save_masked_filename='C:/Users/koester_lab/Documents/Maria/masked/fish'+str(fish_int)+'_6dpf_medium_masked.h5'
+        self.save_mask_filename='C:/Users/koester_lab/Documents/Maria/masked/fish'+str(fish_int)+'_6dpf_medium_mask.npy'
+        self.filename=self.save_masked_filename
 
         #Data and output arrays
         self.mask_arr=np.zeros((21,1024,1024)).astype('float64')
@@ -201,7 +203,7 @@ class MainW(QtGui.QMainWindow):
             # List all groups
             print("Keys: %s" % f.keys())
             start=time.time()
-            data=f['data'][:]
+            data=f['data'][()]
             end=time.time()
             print('Time to load file: ',end-start)
         start=time.time()
@@ -211,9 +213,16 @@ class MainW(QtGui.QMainWindow):
                 #print('SUCCESS!')
         end=time.time()
         print('Time for masking: ', end-start)
-        for_segmentation = h5py.File('data.h5', 'w')
-        for_segmentation.create_dataset('data', data=data)
+        start=time.time()
+        for_segmentation = h5py.File(self.save_masked_filename, 'w')
+        for_segmentation.create_dataset('data', (1800,21,1024,1024),data=data)
         for_segmentation.close()
+
+        np.save(self.save_mask_filename,self.mask_arr)
+        end=time.time()
+        print('Time for saving: ', end-start)
+
+        sys.exit()
 
     def clear_img(self):
         self.data_masked[self.plane_ind,:,:]=self.data[self.plane_ind,:,:].copy()
