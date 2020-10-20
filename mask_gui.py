@@ -44,7 +44,7 @@ class MainW(QtGui.QMainWindow):
         self.filename='C:/Users/koester_lab/Documents/Maria/registered/fish'+str(fish_int)+'_6dpf_medium_aligned.h5'
         self.save_masked_filename='C:/Users/koester_lab/Documents/Maria/masked/fish'+str(fish_int)+'_6dpf_medium_masked.h5'
         self.save_mask_filename='C:/Users/koester_lab/Documents/Maria/masked/fish'+str(fish_int)+'_6dpf_medium_mask.npy'
-        self.filename=self.save_masked_filename
+        #self.filename=self.save_masked_filename
 
         #Data and output arrays
         self.mask_arr=np.zeros((21,1024,1024)).astype('float64')
