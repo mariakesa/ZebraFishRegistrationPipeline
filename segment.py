@@ -22,6 +22,8 @@ import zebrafish_io as io
 import segmentation
 import time
 
+import h5py
+
 STD_DEV_SUFFIX = '_std_dev.h5'
 ROIS_SUFFIX = '_rois.npy'
 TRACES_SUFFIX = '_traces.npy'
@@ -132,7 +134,14 @@ def run(args):
                 shifts = np.load(shifts_fn)
                 shift_dists = np.sqrt(np.sum(np.square(shifts), axis=1))
             print('Loading stack...')
-            stack = dd.io.load(f)
+            #stack = dd.io.load(f)
+            with h5py.File(f, "r") as f_:
+                # List all groups
+                print("Keys: %s" % f_.keys())
+                start=time.time()
+                stack=f_['data'][()]
+                end=time.time()
+                print('Time to load file: ',end-start)
             print('Computing std...')
 
             if not args.no_shifts:
