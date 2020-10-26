@@ -219,7 +219,7 @@ class MainW(QtGui.QMainWindow):
         print('Time for masking: ', end-start)
         start=time.time()
         for_segmentation = h5py.File(self.save_masked_filename, 'w')
-        for_segmentation.create_dataset('data', (1800,21,1024,1024),data=data)
+        for_segmentation.create_dataset('data',data=data)
         for_segmentation.close()
 
         np.save(self.save_mask_filename,self.mask_arr)
