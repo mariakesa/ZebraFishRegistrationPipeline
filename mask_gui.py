@@ -40,7 +40,7 @@ class MainW(QtGui.QMainWindow):
 
         self.setStyleSheet("QMainWindow {background: 'black';}")
 
-        fish_int=17
+        fish_int=2
         self.filename='C:/Users/koester_lab/Documents/Maria/registered/fish'+str(fish_int)+'_6dpf_medium_aligned.h5'
         self.save_masked_filename='C:/Users/koester_lab/Documents/Maria/masked/fish'+str(fish_int)+'_6dpf_medium_masked.h5'
         self.save_mask_filename='C:/Users/koester_lab/Documents/Maria/masked/fish'+str(fish_int)+'_6dpf_medium_mask.npy'
@@ -150,6 +150,8 @@ class MainW(QtGui.QMainWindow):
 
     def segment(self):
 
+        print('Plane segmented: ', self.plane_ind)
+
         x=np.arange(0,1024)
         y=np.arange(0,1024)
         xv, yv = np.meshgrid(x, y, indexing='xy')
@@ -168,6 +170,8 @@ class MainW(QtGui.QMainWindow):
         self.update_text_box()
 
         self.img.pt_lst=[]
+
+
 
     def make_plane_text_box(self):
         self.plane_text = QtGui.QTextEdit()
