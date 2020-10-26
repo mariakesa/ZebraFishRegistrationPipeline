@@ -150,7 +150,7 @@ class MainW(QtGui.QMainWindow):
 
     def segment(self):
 
-        print('Plane segmented: ', self.plane_ind)
+        print('Segmenting plane: ', self.plane_ind)
 
         x=np.arange(0,1024)
         y=np.arange(0,1024)
