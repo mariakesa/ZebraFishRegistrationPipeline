@@ -210,9 +210,10 @@ class MainW(QtGui.QMainWindow):
             data=f['data'][()]
             end=time.time()
             print('Time to load file: ',end-start)
+        shp=data.shape
         start=time.time()
-        for plane_ind in range(21):
-            for time_point in range(1800):
+        for plane_ind in range(shp[1]):
+            for time_point in range(shp[0]):
                 data[time_point,plane_ind,:,:][self.mask_arr[plane_ind,:,:]==0]=0
                 #print('SUCCESS!')
         end=time.time()
@@ -223,6 +224,7 @@ class MainW(QtGui.QMainWindow):
         for_segmentation.close()
 
         np.save(self.save_mask_filename,self.mask_arr)
+
         end=time.time()
         print('Time for saving: ', end-start)
 
