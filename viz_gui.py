@@ -13,28 +13,104 @@ from PyQt5.QtWidgets import *
 import vispy.app
 import sys
 
+from vispy.app import use_app
+use_app('PyQt5')
+from vispy import scene
+from vispy.visuals.transforms import STTransform, TransformSystem
 
 
 
 #data = np.zeros(N, [('a_position', np.float32, 3),
                     #('a_color', np.float32, 4)])
 
-class Canvas(app.Canvas):
+VERT_SHADER = """
+uniform float u_time;
+attribute vec3 a_position;
+attribute vec4 a_color;
+varying float color_;
+
+void main () {
+    gl_Position.xyz = a_position;
+
+    color_=a_color.a;
+
+    gl_PointSize =200.0;
+
+}
+"""
+
+FRAG_SHADER = """
+#version 120
+precision highp float;
+varying float color_;
+uniform vec4 u_color;
+void main()
+{
+    highp vec4 texColor;
+    gl_FragColor = vec4(u_color);
+    gl_FragColor.a = color_;
+
+}
+"""
+import imageio
+from vispy import visuals
+
+im=np.load('C:/Users/koester_lab/Documents/Maria/ZebraFishRegistrationPipeline/im.npy')
+im=imageio.imread('C:/Users/koester_lab/Desktop/poisson-le-plus-moche-5.jpg')
+class Canvas(scene.SceneCanvas):
 
     def __init__(self):
-        app.Canvas.__init__(self,keys='interactive', size=(800, 600))
+        scene.SceneCanvas.__init__(self,keys='interactive', size=(1024, 1024))
 
         # Create program
-        #self._program = gloo.Program(VERT_SHADER, FRAG_SHADER)
-        #self._program.bind(gloo.VertexBuffer(data))
-        self.time_s=np.load('C:/Users/koester_lab/Documents/Maria/segmented/fish2_6dpf_medium_masked_traces.npy')
+        self.unfreeze()
+        self.time_s=np.load('C:/Users/koester_lab/Documents/Maria/segmented/fish2_6dpf_medium_masked_traces.npy')[:,100]
         self.pos=np.load('C:/Users/koester_lab/Documents/Maria/segmented/fish2_6dpf_medium_masked_rois.npy')
+        single_plane=self.pos[:,2]==10
+        self.rois_plane=self.pos[single_plane]
 
-        self.data = np.zeros(self.time_s.shape[0], [('a_position', np.float32, 3),
-                            ('a_color', np.float32, 4)])
+        #self.data = np.zeros(self.time_s.shape[0], [('a_position', np.float32, 3),
+                            #('a_color', np.float32, 4)])
 
-    def draw(self):
-        pass
+        #view = scene.add_view()
+        #view=self.central_widget.add_view()
+        im=imageio.imread('C:/Users/koester_lab/Desktop/poisson-le-plus-moche-5.jpg')
+        im=np.load('C:/Users/koester_lab/Documents/Maria/ZebraFishRegistrationPipeline/im.npy')
+        #self.image = visuals.ImageVisual(data=im)
+        #self.image.set_data(im)
+        print(im.shape)
+        print(im)
+
+        view=self.central_widget.add_view()
+
+        image=scene.visuals.Image(im,parent=view.scene, cmap='grays')
+
+        view.camera = scene.PanZoomCamera(aspect=1)
+        view.camera.set_range()
+        view.camera.flip = (0, 1, 0)
+        #self.im=np.load('C:/Users/koester_lab/Documents/Maria/ZebraFishRegistrationPipeline/im.npy')
+        #self._program = gloo.Program(VERT_SHADER, FRAG_SHADER)
+        #self._program.bind(gloo.VertexBuffer(self.data))
+        #self.draw_visual(image)
+        #self.image_transform = STTransform(scale=(7, 7), translate=(50, 50))
+
+        #self.tr_sys = TransformSystem(self)
+        #self.tr_sys.visual_to_document = self.image_transform
+        #self.image.draw()
+        #self.show()
+
+
+    #def on_draw(self):
+        #gloo.clear("white")
+        #self.image.draw()
+        #self.edges_of_polygons.draw()
+        #self.update()
+    #def draw(self):
+        #pass
+
+
+
+
 
 class MainWindow(QMainWindow):
     def __init__(self, canvas=None,parent=None):
@@ -47,6 +123,8 @@ class MainWindow(QMainWindow):
         widget.setLayout(self.l0)
 
 canvas = Canvas()
+#view = canvas.add_view()
+#image = scene.visuals.Image(im, cmap='grays', parent=view.scene)
 #canvas.is_interactive(True)
 vispy.use('PyQt5')
 w = MainWindow(canvas)
