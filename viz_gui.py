@@ -74,6 +74,7 @@ class Canvas(scene.SceneCanvas):
 
         #view = scene.add_view()
         #view=self.central_widget.add_view()
+        #im=np.zeros((1024,1024,3))
         im=imageio.imread('C:/Users/koester_lab/Desktop/poisson-le-plus-moche-5.jpg')
         im=np.load('C:/Users/koester_lab/Documents/Maria/ZebraFishRegistrationPipeline/im.npy')
         #self.image = visuals.ImageVisual(data=im)
@@ -84,10 +85,33 @@ class Canvas(scene.SceneCanvas):
         view=self.central_widget.add_view()
 
         image=scene.visuals.Image(im,parent=view.scene, cmap='grays')
+        image.set_gl_state('translucent', depth_test=False)
 
-        view.camera = scene.PanZoomCamera(aspect=1)
-        view.camera.set_range()
-        view.camera.flip = (0, 1, 0)
+
+        n_colors = 128
+        alphas = np.linspace(0., 1., n_colors)
+
+        from vispy.color.colormap import Colormap
+        # Red image :
+        color_red = np.c_[np.ones((n_colors,)), np.zeros((n_colors,)),
+                          np.zeros((n_colors)), alphas]
+        cmap_red = Colormap(color_red)
+
+        #self.create_cell_image()
+        #im_red = scene.visuals.Image(self.cell_act, parent=view.scene, cmap=cmap_red)
+        n = self.rois_plane.shape[0]
+        pos = np.zeros((self.rois_plane.shape[0], 2))
+        print(self.rois_plane.shape)
+        colors = np.ones((n, 4), dtype=np.float32)
+        Scatter2D = scene.visuals.create_visual_node(visuals.MarkersVisual)
+        p1 = Scatter2D(parent=view.scene)
+        p1.set_gl_state('translucent', blend=True, depth_test=True)
+        p1.set_data(self.rois_plane[:,:2], face_color=colors, symbol='o', size=10,
+            edge_width=0.5, edge_color='blue')
+
+        #view.camera = scene.PanZoomCamera(aspect=1)
+        #view.camera.set_range()
+        #view.camera.flip = (0, 1, 0)
         #self.im=np.load('C:/Users/koester_lab/Documents/Maria/ZebraFishRegistrationPipeline/im.npy')
         #self._program = gloo.Program(VERT_SHADER, FRAG_SHADER)
         #self._program.bind(gloo.VertexBuffer(self.data))
@@ -98,6 +122,11 @@ class Canvas(scene.SceneCanvas):
         #self.tr_sys.visual_to_document = self.image_transform
         #self.image.draw()
         #self.show()
+
+    def create_cell_image(self):
+        self.cell_act=np.zeros((1024,1024))
+        self.cell_act[self.rois_plane[:,0],self.rois_plane[:,1]]=1
+        self.cell_act=np.rot90(self.cell_act,3)
 
 
     #def on_draw(self):
