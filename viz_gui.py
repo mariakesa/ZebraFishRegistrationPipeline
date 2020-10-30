@@ -64,10 +64,18 @@ class Canvas(scene.SceneCanvas):
 
         # Create program
         self.unfreeze()
-        self.time_s=np.load('C:/Users/koester_lab/Documents/Maria/segmented/fish2_6dpf_medium_masked_traces.npy')[:,100]
+        self.time_s=np.load('C:/Users/koester_lab/Documents/Maria/segmented/fish2_6dpf_medium_masked_traces.npy')
         self.pos=np.load('C:/Users/koester_lab/Documents/Maria/segmented/fish2_6dpf_medium_masked_rois.npy')
         single_plane=self.pos[:,2]==10
         self.rois_plane=self.pos[single_plane]
+        self.time_s=self.time_s[single_plane]
+
+        from sklearn.preprocessing import MinMaxScaler
+        scaler=MinMaxScaler(feature_range=(0, 1),copy=True)
+        self.time_s_colors=scaler.fit_transform(self.time_s.T).T
+        from vispy import color
+        cm=color.get_colormap("hsl").map(self.time_s_colors[:,0])
+        print(cm.shape)
 
         #self.data = np.zeros(self.time_s.shape[0], [('a_position', np.float32, 3),
                             #('a_color', np.float32, 4)])
@@ -102,11 +110,12 @@ class Canvas(scene.SceneCanvas):
         n = self.rois_plane.shape[0]
         pos = np.zeros((self.rois_plane.shape[0], 2))
         print(self.rois_plane.shape)
-        colors = np.ones((n, 4), dtype=np.float32)
+        colors_ = np.ones((n, 4), dtype=np.float32)
+        colors=vispy.color.ColorArray(cm,alpha=0.3)
         Scatter2D = scene.visuals.create_visual_node(visuals.MarkersVisual)
         p1 = Scatter2D(parent=view.scene)
         p1.set_gl_state('translucent', blend=True, depth_test=True)
-        p1.set_data(self.rois_plane[:,:2], face_color=colors, symbol='o', size=10,
+        p1.set_data(self.rois_plane[:,:2], face_color=colors, symbol='o', size=8,
             edge_width=0.5, edge_color='blue')
 
         #view.camera = scene.PanZoomCamera(aspect=1)
