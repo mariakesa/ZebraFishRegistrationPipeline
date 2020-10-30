@@ -17,6 +17,7 @@ from vispy.app import use_app
 use_app('PyQt5')
 from vispy import scene
 from vispy.visuals.transforms import STTransform, TransformSystem
+from vispy import color
 
 
 
@@ -74,7 +75,7 @@ class Canvas(scene.SceneCanvas):
         scaler=MinMaxScaler(feature_range=(0, 1),copy=True)
         self.time_s_colors=scaler.fit_transform(self.time_s.T).T
         from vispy import color
-        cm=color.get_colormap("hsl").map(self.time_s_colors[:,0])
+        cm=color.get_colormap("bwr").map(self.time_s_colors[:,0])
         print(cm.shape)
 
         #self.data = np.zeros(self.time_s.shape[0], [('a_position', np.float32, 3),
@@ -111,40 +112,33 @@ class Canvas(scene.SceneCanvas):
         pos = np.zeros((self.rois_plane.shape[0], 2))
         print(self.rois_plane.shape)
         colors_ = np.ones((n, 4), dtype=np.float32)
-        colors=vispy.color.ColorArray(cm,alpha=0.3)
+        colors=vispy.color.ColorArray(cm,alpha=0.5)
         Scatter2D = scene.visuals.create_visual_node(visuals.MarkersVisual)
-        p1 = Scatter2D(parent=view.scene)
-        p1.set_gl_state('translucent', blend=True, depth_test=True)
-        p1.set_data(self.rois_plane[:,:2], face_color=colors, symbol='o', size=8,
+        self.p1 = Scatter2D(parent=view.scene)
+        self.p1.set_gl_state('translucent', blend=True, depth_test=True)
+        self.p1.set_data(self.rois_plane[:,:2], face_color=colors, symbol='o', size=8,
             edge_width=0.5, edge_color='blue')
 
-        #view.camera = scene.PanZoomCamera(aspect=1)
-        #view.camera.set_range()
-        #view.camera.flip = (0, 1, 0)
-        #self.im=np.load('C:/Users/koester_lab/Documents/Maria/ZebraFishRegistrationPipeline/im.npy')
-        #self._program = gloo.Program(VERT_SHADER, FRAG_SHADER)
-        #self._program.bind(gloo.VertexBuffer(self.data))
-        #self.draw_visual(image)
-        #self.image_transform = STTransform(scale=(7, 7), translate=(50, 50))
-
-        #self.tr_sys = TransformSystem(self)
-        #self.tr_sys.visual_to_document = self.image_transform
-        #self.image.draw()
-        #self.show()
+        self.i=0
+        global i
+        i=0
+        self._timer = app.Timer(interval=0.001,connect=self.update_colors(), start=0)
+        self._timer.start()
 
     def create_cell_image(self):
         self.cell_act=np.zeros((1024,1024))
         self.cell_act[self.rois_plane[:,0],self.rois_plane[:,1]]=1
         self.cell_act=np.rot90(self.cell_act,3)
 
-
-    #def on_draw(self):
-        #gloo.clear("white")
-        #self.image.draw()
-        #self.edges_of_polygons.draw()
-        #self.update()
-    #def draw(self):
-        #pass
+    def update_colors(self):
+        cm=color.get_colormap("bwr").map(self.time_s_colors[:,self.i])
+        colors=vispy.color.ColorArray(cm,alpha=0.3)
+        self.p1.set_data(self.rois_plane[:,:2], face_color=colors, symbol='o', size=8,
+            edge_width=0.5, edge_color='blue')
+        print(self.i)
+        self.i+=1
+        global i
+        i+=1
 
 
 
@@ -160,11 +154,25 @@ class MainWindow(QMainWindow):
         self.l0.addWidget(canvas.native)
         widget.setLayout(self.l0)
 
+
+
 canvas = Canvas()
 #view = canvas.add_view()
 #image = scene.visuals.Image(im, cmap='grays', parent=view.scene)
 #canvas.is_interactive(True)
 vispy.use('PyQt5')
+def update(ev):
+    cm=color.get_colormap("bwr").map(canvas.time_s_colors[:,canvas.i])
+    colors=vispy.color.ColorArray(cm,alpha=0.5)
+    canvas.p1.set_data(canvas.rois_plane[:,:2], face_color=colors, symbol='o', size=8,
+        edge_width=0.5, edge_color='blue')
+    print(canvas.i)
+    canvas.i+=1
+    global i
+    i+=1
+timer = vispy.app.Timer()
+timer.connect(update)
+timer.start(0)
 w = MainWindow(canvas)
 w.show()
 vispy.app.run()
