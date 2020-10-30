@@ -122,23 +122,12 @@ class Canvas(scene.SceneCanvas):
         self.i=0
         global i
         i=0
-        self._timer = app.Timer(interval=0.001,connect=self.update_colors(), start=0)
-        self._timer.start()
+
 
     def create_cell_image(self):
         self.cell_act=np.zeros((1024,1024))
         self.cell_act[self.rois_plane[:,0],self.rois_plane[:,1]]=1
         self.cell_act=np.rot90(self.cell_act,3)
-
-    def update_colors(self):
-        cm=color.get_colormap("bwr").map(self.time_s_colors[:,self.i])
-        colors=vispy.color.ColorArray(cm,alpha=0.3)
-        self.p1.set_data(self.rois_plane[:,:2], face_color=colors, symbol='o', size=8,
-            edge_width=0.5, edge_color='blue')
-        print(self.i)
-        self.i+=1
-        global i
-        i+=1
 
 
 
@@ -173,6 +162,7 @@ def update(ev):
 timer = vispy.app.Timer()
 timer.connect(update)
 timer.start(0)
+timer.interval=0.3
 w = MainWindow(canvas)
 w.show()
 vispy.app.run()
