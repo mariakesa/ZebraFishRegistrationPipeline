@@ -19,6 +19,8 @@ from vispy import scene
 from vispy.visuals.transforms import STTransform, TransformSystem
 from vispy import color
 
+import h5py
+
 
 
 #data = np.zeros(N, [('a_position', np.float32, 3),
@@ -71,11 +73,10 @@ class Canvas(scene.SceneCanvas):
         self.rois_plane=self.pos[single_plane]
         self.time_s=self.time_s[single_plane]
 
-        from sklearn.preprocessing import MinMaxScaler
-        scaler=MinMaxScaler(feature_range=(0, 1),copy=True)
-        self.time_s_colors=scaler.fit_transform(self.time_s.T).T
+
+        self.time_s_colors=self.time_s/800
         from vispy import color
-        cm=color.get_colormap("bwr").map(self.time_s_colors[:,0])
+        cm=color.get_colormap("cool").map(self.time_s_colors[:,0])
         print(cm.shape)
 
         #self.data = np.zeros(self.time_s.shape[0], [('a_position', np.float32, 3),
@@ -91,10 +92,10 @@ class Canvas(scene.SceneCanvas):
         print(im.shape)
         print(im)
 
-        view=self.central_widget.add_view()
+        self.view=self.central_widget.add_view()
 
-        image=scene.visuals.Image(im,parent=view.scene, cmap='grays')
-        image.set_gl_state('translucent', depth_test=False)
+        self.image=scene.visuals.Image(im,parent=self.view.scene, cmap='grays',clim=[0,255])
+        self.image.set_gl_state('translucent', depth_test=False)
 
 
         n_colors = 128
@@ -112,22 +113,38 @@ class Canvas(scene.SceneCanvas):
         pos = np.zeros((self.rois_plane.shape[0], 2))
         print(self.rois_plane.shape)
         colors_ = np.ones((n, 4), dtype=np.float32)
-        colors=vispy.color.ColorArray(cm,alpha=0.5)
+        colors=vispy.color.ColorArray(cm,alpha=0.8)
         Scatter2D = scene.visuals.create_visual_node(visuals.MarkersVisual)
-        self.p1 = Scatter2D(parent=view.scene)
-        self.p1.set_gl_state('translucent', blend=True, depth_test=True)
+        self.p1 = Scatter2D(parent=self.view.scene)
+        #self.p1.set_gl_state('translucent', blend=True, depth_test=False)
         self.p1.set_data(self.rois_plane[:,:2], face_color=colors, symbol='o', size=8,
             edge_width=0.5, edge_color='blue')
 
         self.i=0
-        global i
-        i=0
+        #global i
+        #i=0
+
+        self.load_raw_data()
 
 
     def create_cell_image(self):
         self.cell_act=np.zeros((1024,1024))
         self.cell_act[self.rois_plane[:,0],self.rois_plane[:,1]]=1
         self.cell_act=np.rot90(self.cell_act,3)
+
+    def load_raw_data(self):
+        filename='C:/Users/koester_lab/Documents/Maria/registered/fish2_6dpf_medium_aligned.h5'
+        with h5py.File(filename, "r") as f:
+            # List all groups
+            print("Keys: %s" % f.keys())
+            start=time.time()
+            self.raw_data=np.array(f['data'][:,10,:,:],dtype='float64')#[1000,10,:,:]
+            end=time.time()
+            print('Time to load file: ',end-start)
+        for j in range(0,self.raw_data.shape[0]):
+            self.raw_data[j,:,:] *= 400.0/(self.raw_data[j,:,:].max()+0.000001)
+
+
 
 
 
@@ -151,18 +168,20 @@ canvas = Canvas()
 #canvas.is_interactive(True)
 vispy.use('PyQt5')
 def update(ev):
-    cm=color.get_colormap("bwr").map(canvas.time_s_colors[:,canvas.i])
-    colors=vispy.color.ColorArray(cm,alpha=0.5)
+    cm=color.get_colormap("cool").map(canvas.time_s_colors[:,canvas.i])
+    colors=vispy.color.ColorArray(cm,alpha=0.8)
     canvas.p1.set_data(canvas.rois_plane[:,:2], face_color=colors, symbol='o', size=8,
         edge_width=0.5, edge_color='blue')
+    canvas.image.set_data(canvas.raw_data[canvas.i,:,:])
     print(canvas.i)
     canvas.i+=1
-    global i
-    i+=1
+    #global i
+    #i+=1
+
 timer = vispy.app.Timer()
 timer.connect(update)
 timer.start(0)
-timer.interval=0.3
+timer.interval=0.1
 w = MainWindow(canvas)
 w.show()
 vispy.app.run()
