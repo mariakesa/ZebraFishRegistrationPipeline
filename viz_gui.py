@@ -91,6 +91,24 @@ class MainWindow(QMainWindow):
         self.l0 = QGridLayout()
         self.l0.addWidget(canvas.native)
         widget.setLayout(self.l0)
+        self.timer_init()
+
+    def timer_init(self):
+        self.timer = vispy.app.Timer()
+        self.timer.connect(self.update)
+        self.timer.start(0)
+        self.timer.interval=0.1
+
+    def update(self,ev):
+        cm=color.get_colormap("cool").map(canvas.time_s_colors[:,canvas.i])
+        colors=vispy.color.ColorArray(cm,alpha=0.8)
+        canvas.p1.set_data(canvas.rois_plane[:,:2], face_color=colors, symbol='o', size=8,
+            edge_width=0.5, edge_color='blue')
+        canvas.image.set_data(canvas.raw_data[canvas.i,:,:])
+        print(canvas.i)
+        canvas.i+=1
+        if canvas.i>=canvas.raw_data.shape[0]:
+            canvas.i=0
 
 
 
@@ -112,10 +130,10 @@ def update(ev):
     #global i
     #i+=1
 
-timer = vispy.app.Timer()
-timer.connect(update)
-timer.start(0)
-timer.interval=0.1
+#timer = vispy.app.Timer()
+#timer.connect(update)
+#timer.start(0)
+#timer.interval=0.1
 w = MainWindow(canvas)
 w.show()
 vispy.app.run()
