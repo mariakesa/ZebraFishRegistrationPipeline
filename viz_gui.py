@@ -49,6 +49,17 @@ class Canvas(scene.SceneCanvas):
         self.p1 = Scatter2D(parent=self.view.scene)
         self.p1.set_data(self.rois_plane[:,:2], face_color=colors, symbol='o', size=8,
             edge_width=0.5, edge_color='blue')
+        print(self.min,self.max)
+        colormap = color.get_colormap("cool")
+        self.colorbar=scene.visuals.ColorBar(clim=(self.min,self.max),cmap=colormap,orientation='right',size=(100,30),label_str='dF/F',parent=self.view.scene,pos=(100,100),label_color='white')
+
+        self.colorbar.label.font_size = 10
+        #self.colorbar.draw()
+        #self.time=0
+
+        #self.time_text=scene.visuals.Text(str(time),color='white',pos=(100,0),bold=True)
+
+
 
 
     def create_cell_image(self):
@@ -57,7 +68,8 @@ class Canvas(scene.SceneCanvas):
         self.cell_act=np.rot90(self.cell_act,3)
 
     def load_data(self):
-        filename='C:/Users/koester_lab/Documents/Maria/registered/fish2_6dpf_medium_aligned.h5'
+        filename='C:/Users/koester_lab/Documents/Maria/registered/fish17_6dpf_medium_aligned_andreas.h5'
+        filename='Y:/Maria/Registered/fish2_6dpf_medium_aligned_andreas.h5 '
         with h5py.File(filename, "r") as f:
             # List all groups
             print("Loading raw data from a plane...")
@@ -68,12 +80,25 @@ class Canvas(scene.SceneCanvas):
         for j in range(0,self.raw_data.shape[0]):
             self.raw_data[j,:,:] *= 400.0/(self.raw_data[j,:,:].max()+0.00001)
 
-        self.time_s=np.load('C:/Users/koester_lab/Documents/Maria/segmented/fish2_6dpf_medium_masked_traces.npy')
-        self.pos=np.load('C:/Users/koester_lab/Documents/Maria/segmented/fish2_6dpf_medium_masked_rois.npy')
+        #self.time_s=np.load('C:/Users/koester_lab/Documents/Maria/segmented/fish2_6dpf_medium_masked_traces.npy')
+        #self.pos=np.load('C:/Users/koester_lab/Documents/Maria/segmented/fish2_6dpf_medium_masked_rois.npy')
+        times_file='Y:/Maria/segmented/fish2_6dpf_medium_masked_traces.npy '
+        pos_file='Y:/Maria/segmented/fish2_6dpf_medium_masked_rois.npy'
+        self.pos=np.load(pos_file)
+        self.time_s=np.load(times_file)
+        #self.time_s=np.load('Y:/Maria/segmented/fish2_6dpf_medium_detrended_traces.npy')
+        #self.pos=np.load('Y:/Maria/segmented/fish2_6dpf_medium_detrended_rois.npy')
         single_plane=self.pos[:,2]==self.plane_ind
         self.rois_plane=self.pos[single_plane]
         self.time_s=self.time_s[single_plane]
         self.time_s_colors=self.time_s/800
+        self.min=np.min(self.time_s)
+        self.max=np.max(self.time_s)
+
+    #def on_draw(self,event):
+        #self.image.draw()
+        #self.p1.draw()
+        #self.colorbar.draw()
 
 
 class MainWindow(QMainWindow):
@@ -105,6 +130,14 @@ class MainWindow(QMainWindow):
         canvas.p1.set_data(canvas.rois_plane[:,:2], face_color=colors, symbol='o', size=8,
             edge_width=0.5, edge_color='blue')
         canvas.image.set_data(canvas.raw_data[canvas.i,:,:])
+        #colormap = color.get_colormap("cool")
+        #canvas.colorbar=scene.visuals.ColorBar(clim=(canvas.min,canvas.max),cmap=colormap,orientation='left',size=(50,10),label_str='dF/F',parent=canvas.view.scene)
+        #canvas.colorbar.draw()
+        #canvas.time+=0.3
+        #canvas.colorbar.draw()
+        #canvas.draw()
+        canvas.update()
+        #print(canvas.raw_data[canvas.i,:,:])
         print(canvas.i)
         canvas.i+=1
         if canvas.i>=canvas.raw_data.shape[0]:
