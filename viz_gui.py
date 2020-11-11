@@ -144,6 +144,7 @@ class MainWindow(QMainWindow):
             canvas.i=0
 
     def change_plane_ind(self):
+        canvas.i=0
         canvas.plane_ind=int(self.pl_ind_box.text())
         canvas.load_data()
         self.timer_init()
