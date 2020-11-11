@@ -88,6 +88,7 @@ class MainWindow(QMainWindow):
         self.timer.connect(self.update)
         self.timer.start(0)
         self.timer.interval=0.1
+        canvas.i=0
 
     def update(self,ev):
         canvas.image.set_data(canvas.raw_data[canvas.i,:,:])
@@ -107,7 +108,6 @@ class MainWindow(QMainWindow):
         canvas.update()
 
     def change_plane_ind(self):
-        canvas.i=0
         canvas.plane_ind=int(self.pl_ind_box.text())
         canvas.load_data()
         self.timer_init()
