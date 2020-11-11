@@ -42,10 +42,16 @@ class Canvas(scene.SceneCanvas):
         self.image=scene.visuals.Image(self.raw_data[0,:,:],parent=self.view.scene, cmap='bwr',clim=[0,255])
         #self.image.set_gl_state('translucent', depth_test=False)
 
+        self.time_text=scene.visuals.Text(str(self.i),color='white',font_size=25,pos=(900,100),bold=True,parent=self.view.scene)
+
 
     def load_data(self):
         #filename='C:/Users/koester_lab/Documents/Maria/registered/fish2_6dpf_medium_aligned_andreas.h5'
-        filename='//ZMN-HIVE/User-Data/Maria/Registered/fish2_6dpf_medium_aligned_andreas.h5'
+        #filename='//ZMN-HIVE/User-Data/Maria/Registered/fish2_6dpf_medium_aligned_andreas.h5'
+        #filename='C:/Users/koester_lab/Documents/Maria/registered/fish9_6dpf_medium_aligned_andreas.h5'
+        filename='Y:/Maria/detrended/fish2_6dpf_medium_detrended.h5'
+        filename='C:/Users/koester_lab/Documents/Maria/masked/fish2_6dpf_medium_masked.h5'
+        filename='Y:/Maria/Registered/fish04_6dpf_amph_aligned_andreas.h5'
         with h5py.File(filename, "r") as f:
             # List all groups
             print("Loading raw data from a plane...")
@@ -73,6 +79,8 @@ class MainWindow(QMainWindow):
         self.pl_ind_box.returnPressed.connect(lambda: self.change_plane_ind())
         widget.setLayout(self.l0)
 
+        #self.writer = imageio.get_writer('C:/Users/koester_lab/Documents/masked.gif')
+
         self.timer_init()
 
     def timer_init(self):
@@ -85,12 +93,21 @@ class MainWindow(QMainWindow):
         canvas.image.set_data(canvas.raw_data[canvas.i,:,:])
         #print(canvas.raw_data[canvas.i,:,:])
         print(canvas.i)
+        canvas.time_text.text=str(canvas.i)
         canvas.i+=1
+
+        #im=canvas.render()
+        #self.writer.append_data(im)
         if canvas.i>=canvas.raw_data.shape[0]:
+            #self.writer.close()
+            #import sys
+            #sys.exit()
             canvas.i=0
+
         canvas.update()
 
     def change_plane_ind(self):
+        canvas.i=0
         canvas.plane_ind=int(self.pl_ind_box.text())
         canvas.load_data()
         self.timer_init()
