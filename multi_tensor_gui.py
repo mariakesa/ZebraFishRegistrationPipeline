@@ -102,12 +102,13 @@ class MainWindow(QMainWindow):
     def __init__(self, canvas=None,parent=None):
         super(MainWindow, self).__init__(parent)
         self.create_canvi()
+        self.canvas_lst_for_grid()
         self.l0 = QGridLayout()
         self.add_screens()
         self.t_c=QLineEdit()
         self.t_c.setText("0")
         self.t_c.setFixedWidth(35)
-        self.l0.addWidget(self.t_c, 0, 8, 1, 2)
+        self.l0.addWidget(self.t_c, 0, 14, 1, 2)
         self.t_c.returnPressed.connect(lambda: self.change_t_c())
         box = QGroupBox()
         box.setLayout(self.l0)
@@ -119,7 +120,7 @@ class MainWindow(QMainWindow):
 
     def create_canvi(self):
         self.canvas_lst=[]
-        self.file_paths=['//ZMN-HIVE/User-Data/Maria/Registered/fish9_6dpf_medium_aligned_andreas.h5','//ZMN-HIVE/User-Data/Maria/Registered/fish43_6dpf_amph_aligned_andreas.h5']
+        self.file_paths=['//ZMN-HIVE/User-Data/Maria/Registered/fish2_6dpf_medium_aligned_andreas.h5','//ZMN-HIVE/User-Data/Maria/Registered/fish17_6dpf_medium_aligned_andreas.h5','//ZMN-HIVE/User-Data/Maria/Registered/fish9_6dpf_medium_aligned_andreas.h5','//ZMN-HIVE/User-Data/Maria/Registered/fish04_6dpf_amph_aligned_andreas.h5','//ZMN-HIVE/User-Data/Maria/Registered/fish41_6dpf_amph_aligned_andreas.h5','//ZMN-HIVE/User-Data/Maria/Registered/fish43_6dpf_amph_aligned_andreas.h5']
         for c in self.file_paths:
             self.canvas_lst.append(Canvas(c))
         min_times_interm=[]
@@ -127,11 +128,26 @@ class MainWindow(QMainWindow):
             min_times_interm.append(canvas.max_time)
         self.min_time=min(min_times_interm)
 
+    def canvas_lst_for_grid(self):
+        self.canvas_grid=[]
+        i=0
+        for v in range(0,2):
+            interm=[]
+            for h in range(0,3):
+                interm.append(self.canvas_lst[i+h])
+            i=3
+            self.canvas_grid.append(interm)
+        print('canvas grid: ,',self.canvas_grid)
+
     def add_screens(self):
-        cntr=0
-        for canvas in self.canvas_lst:
-            self.l0.addWidget(canvas.native,0,cntr,4,4)
-            cntr+=4
+        i=0
+        for v in range(0,2):
+            z=0
+            for h in range(0,3):
+                self.l0.addWidget(self.canvas_grid[v][h].native,i+4,z+6,4,6)
+                i=4
+                z+=4
+            #cntr+=4
 
 
     def timer_init(self):
@@ -171,4 +187,4 @@ app = QApplication(sys.argv)
 w = MainWindow()
 w.show()
 vispy.app.run()
-vispy.app.processEvents()
+#vispy.app.processEvents()

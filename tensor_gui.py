@@ -57,17 +57,20 @@ class Canvas(scene.SceneCanvas):
     def fit_tensors(self):
         start=time.time()
         print('Fitting Tucker decomposition...')
-        core, factors = tucker(self.raw_data, ranks = [30,100,100])
+        core, factors = tucker(self.raw_data, ranks = [100,50,50])
         end=time.time()
         print('Tucker done in:', end-start)
         self.core=core
         self.factors=factors
 
     def factors_to_tensors(self):
-        factors_=tl.tensor([self.factors[0][:,self.temporal_component].reshape(-1,1),self.factors[1],self.factors[2]])
-        self.tensor_data=tucker_to_tensor((self.core[self.temporal_component,:,:].reshape(1,100,100), factors_))
+        #factors_=tl.tensor([self.factors[0][:,self.temporal_component].reshape(-1,1),self.factors[1],self.factors[2]])
+        factors_=tl.tensor([self.factors[0][:,:self.temporal_component*5+1].reshape(-1,self.temporal_component*5+1),self.factors[1],self.factors[2]])
+        print(factors_.shape)
+        print(self.core.shape)
+        self.tensor_data=tucker_to_tensor((self.core[:self.temporal_component*5+1,:,:].reshape(-1,50,50), factors_))
         for j in range(0,self.tensor_data.shape[0]):
-            self.tensor_data[j,:,:] *= 200.0/(self.tensor_data[j,:,:].max()+0.00001)
+            self.tensor_data[j,:,:] *= 300.0/(self.tensor_data[j,:,:].max()+0.00001)
 
     def load_data(self):
         #filename='C:/Users/koester_lab/Documents/Maria/registered/fish2_6dpf_medium_aligned_andreas.h5'
@@ -75,8 +78,9 @@ class Canvas(scene.SceneCanvas):
         #filename='C:/Users/koester_lab/Documents/Maria/registered/fish9_6dpf_medium_aligned_andreas.h5'
         filename='Y:/Maria/detrended/fish2_6dpf_medium_detrended.h5'
         filename='C:/Users/koester_lab/Documents/Maria/masked/fish2_6dpf_medium_masked.h5'
-        filename='Y:/Maria/Registered/fish04_6dpf_amph_aligned_andreas.h5'
-        filename='//ZMN-HIVE/User-Data/Maria/Registered/fish04_6dpf_amph_aligned_andreas.h5'
+        filename='Y:/Maria/Registered/fish9_6dpf_amph_aligned_andreas.h5'
+        filename='//ZMN-HIVE/User-Data/Maria/Registered/fish43_6dpf_amph_aligned_andreas.h5'
+        filename='//ZMN-HIVE/User-Data/Maria/Registered/fish9_6dpf_medium_aligned_andreas.h5'
         #filename='C:/Users/koester_lab/Documents/Maria/registered/fish04_6dpf_amph_aligned_carsen.h5'
         with h5py.File(filename, "r") as f:
             # List all groups
