@@ -60,7 +60,7 @@ class Canvas(scene.SceneCanvas):
     def fit_tensors(self):
         start=time.time()
         print('Fitting Tucker decomposition...')
-        core, factors = tucker(self.raw_data, ranks = [2,50,50])
+        core, factors = tucker(self.raw_data, ranks = [20,50,50])
         end=time.time()
         print('Tucker done in:', end-start)
         self.core=core
@@ -89,7 +89,7 @@ class Canvas(scene.SceneCanvas):
             # List all groups
             print("Loading raw data from a plane...")
             start=time.time()
-            self.raw_data=f['data'][:50,self.plane_ind,:,:].astype('float32')
+            self.raw_data=f['data'][:100,self.plane_ind,:,:].astype('float32')
             end=time.time()
             print('Time to load raw data file: ',end-start)
         #for j in range(0,self.raw_data.shape[0]):
@@ -171,4 +171,4 @@ app = QApplication(sys.argv)
 w = MainWindow()
 w.show()
 vispy.app.run()
-#vispy.app.processEvents(
+vispy.app.processEvents()
