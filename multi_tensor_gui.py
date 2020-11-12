@@ -89,7 +89,7 @@ class Canvas(scene.SceneCanvas):
             # List all groups
             print("Loading raw data from a plane...")
             start=time.time()
-            self.raw_data=f['data'][:,self.plane_ind,:,:].astype('float32')
+            self.raw_data=f['data'][:50,self.plane_ind,:,:].astype('float32')
             end=time.time()
             print('Time to load raw data file: ',end-start)
         #for j in range(0,self.raw_data.shape[0]):
@@ -130,7 +130,7 @@ class MainWindow(QMainWindow):
 
     def add_screens(self):
         cntr=0
-        for canvas in canvas_lst:
+        for canvas in self.canvas_lst:
             self.l0.addWidget(canvas.native,0,cntr,4,4)
             cntr+=4
         min_times_interm=[]
