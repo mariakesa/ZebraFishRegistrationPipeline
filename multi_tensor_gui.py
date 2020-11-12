@@ -60,7 +60,7 @@ class Canvas(scene.SceneCanvas):
     def fit_tensors(self):
         start=time.time()
         print('Fitting Tucker decomposition...')
-        core, factors = tucker(self.raw_data, ranks = [100,50,50])
+        core, factors = tucker(self.raw_data, ranks = [2,50,50])
         end=time.time()
         print('Tucker done in:', end-start)
         self.core=core
@@ -110,9 +110,8 @@ class MainWindow(QMainWindow):
         self.l0.addWidget(self.t_c, 0, 8, 1, 2)
         self.t_c.returnPressed.connect(lambda: self.change_t_c())
         box = QGroupBox()
-        box.setLayout(layout)
+        box.setLayout(self.l0)
         self.setCentralWidget(box)
-        widget.setLayout(box)
 
         #self.writer = imageio.get_writer('C:/Users/koester_lab/Documents/masked.gif')
 
@@ -124,7 +123,7 @@ class MainWindow(QMainWindow):
         for c in self.file_paths:
             self.canvas_lst.append(Canvas(c))
         min_times_interm=[]
-        for canvas in canvas_lst:
+        for canvas in self.canvas_lst:
             min_times_interm.append(canvas.max_time)
         self.min_time=min(min_times_interm)
 
@@ -133,7 +132,6 @@ class MainWindow(QMainWindow):
         for canvas in self.canvas_lst:
             self.l0.addWidget(canvas.native,0,cntr,4,4)
             cntr+=4
-        min_times_interm=[]
 
 
     def timer_init(self):
@@ -141,24 +139,26 @@ class MainWindow(QMainWindow):
         self.timer.connect(self.update)
         self.timer.start(0)
         self.timer.interval=0.1
-        canvas.i=0
-
-    def update(self,ev):
-        canvas.image.set_data(canvas.tensor_data[canvas.i,:,:])
-        #print(canvas.raw_data[canvas.i,:,:])
-        print(canvas.i)
-        canvas.time_text.text=str(canvas.i)
-        canvas.i+=1
-
-        #im=canvas.render()
-        #self.writer.append_data(im)
-        if canvas.i>=self.min_time:
-            #self.writer.close()
-            #import sys
-            #sys.exit()
+        for canvas in self.canvas_lst:
             canvas.i=0
 
-        canvas.update()
+    def update(self,ev):
+        for canvas in self.canvas_lst:
+            print(canvas.tensor_data[canvas.i])
+            canvas.image.set_data(canvas.tensor_data[canvas.i,:,:])
+            #print(canvas.raw_data[canvas.i,:,:])
+            canvas.time_text.text=str(canvas.i)
+            canvas.i+=1
+
+            #im=canvas.render()
+            #self.writer.append_data(im)
+            if canvas.i>=self.min_time:
+                #self.writer.close()
+                #import sys
+                #sys.exit()
+                canvas.i=0
+
+            canvas.update()
 
     def change_t_c(self):
         canvas.temporal_component=int(self.t_c.text())
