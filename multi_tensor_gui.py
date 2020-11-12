@@ -44,6 +44,8 @@ class Canvas(scene.SceneCanvas):
         self.filename=file_path
         self.load_data()
 
+        self.max_time=self.raw_data.shape[0]
+
         self.fit_tensors()
 
         self.factors_to_tensors()
@@ -100,10 +102,8 @@ class MainWindow(QMainWindow):
     def __init__(self, canvas=None,parent=None):
         super(MainWindow, self).__init__(parent)
         self.create_canvi()
-        widget = QWidget()
-        self.setCentralWidget(widget)
         self.l0 = QGridLayout()
-        self.l0.addWidget(canvas.native)
+        self.add_screens()
         self.t_c=QLineEdit()
         self.t_c.setText("0")
         self.t_c.setFixedWidth(35)
@@ -123,6 +123,18 @@ class MainWindow(QMainWindow):
         self.file_paths=['//ZMN-HIVE/User-Data/Maria/Registered/fish9_6dpf_medium_aligned_andreas.h5','//ZMN-HIVE/User-Data/Maria/Registered/fish43_6dpf_amph_aligned_andreas.h5']
         for c in self.file_paths:
             self.canvas_lst.append(Canvas(c))
+        min_times_interm=[]
+        for canvas in canvas_lst:
+            min_times_interm.append(canvas.max_time)
+        self.min_time=min(min_times_interm)
+
+    def add_screens(self):
+        cntr=0
+        for canvas in canvas_lst:
+            self.l0.addWidget(canvas.native,0,cntr,4,4)
+            cntr+=4
+        min_times_interm=[]
+
 
     def timer_init(self):
         self.timer = vispy.app.Timer()
@@ -140,7 +152,7 @@ class MainWindow(QMainWindow):
 
         #im=canvas.render()
         #self.writer.append_data(im)
-        if canvas.i>=canvas.raw_data.shape[0]:
+        if canvas.i>=self.min_time:
             #self.writer.close()
             #import sys
             #sys.exit()
