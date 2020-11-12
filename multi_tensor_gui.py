@@ -144,7 +144,6 @@ class MainWindow(QMainWindow):
 
     def update(self,ev):
         for canvas in self.canvas_lst:
-            print(canvas.tensor_data[canvas.i])
             canvas.image.set_data(canvas.tensor_data[canvas.i,:,:])
             #print(canvas.raw_data[canvas.i,:,:])
             canvas.time_text.text=str(canvas.i)
@@ -161,8 +160,9 @@ class MainWindow(QMainWindow):
             canvas.update()
 
     def change_t_c(self):
-        canvas.temporal_component=int(self.t_c.text())
-        canvas.factors_to_tensors()
+        for canvas in self.canvas_lst:
+            canvas.temporal_component=int(self.t_c.text())
+            canvas.factors_to_tensors()
         self.timer_init()
 
 #canvas = Canvas()
