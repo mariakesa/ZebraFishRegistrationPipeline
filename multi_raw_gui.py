@@ -49,7 +49,7 @@ class Canvas(scene.SceneCanvas):
 
         self.view=self.central_widget.add_view()
 
-        self.image=scene.visuals.Image(self.raw_data[0,:,:],parent=self.view.scene, cmap='bwr',clim=[0,255])
+        self.image=scene.visuals.Image(self.raw_data[0,:,:],parent=self.view.scene, cmap='gray',clim=[0,255])
         #self.image.set_gl_state('translucent', depth_test=False)
 
         self.time_text=scene.visuals.Text(str(self.i),color='white',font_size=25,pos=(900,100),bold=True,parent=self.view.scene)
@@ -71,8 +71,8 @@ class Canvas(scene.SceneCanvas):
             self.raw_data=f['data'][:,self.plane_ind,:,:].astype('float32')
             end=time.time()
             print('Time to load raw data file: ',end-start)
-        #for j in range(0,self.raw_data.shape[0]):
-            #self.raw_data[j,:,:] *= 200.0/(self.raw_data[j,:,:].max()+0.00001)
+        for j in range(0,self.raw_data.shape[0]):
+            self.raw_data[j,:,:] *= 0.3 #300.0/(self.raw_data[j,:,:].max()+0.00001)
 
 
 
