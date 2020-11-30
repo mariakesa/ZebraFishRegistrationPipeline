@@ -1,6 +1,7 @@
 import h5py
 import numpy as np
 from scipy.signal import detrend
+import time
 
 file_path='//ZMN-HIVE/User-Data/Maria/masked/fish20_6dpf_medium_masked.h5'
 save_path='//ZMN-HIVE/User-Data/Maria/masked/fish20_6dpf_medium_masked_detrended.h5'
@@ -18,7 +19,7 @@ def detrend_a_plane(file_path,plane_ind):
     detr=detrend(dat)
     return detr.reshape(-1,1024,1024)
 
-def detrend(file_path,save_path):
+def detrend_file(file_path,save_path):
     with h5py.File(file_path, "r") as f:
         print("Loading raw data from plane: "+str(file_path))
         start=time.time()
@@ -35,3 +36,5 @@ def detrend(file_path,save_path):
     detrended = h5py.File(save_filename, 'w')
     detrended.create_dataset('data',data=detr_container)
     detrended.close()
+
+detrend_file(file_path,save_path)
