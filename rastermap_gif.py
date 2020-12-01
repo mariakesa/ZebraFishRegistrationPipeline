@@ -41,8 +41,9 @@ class Canvas(scene.SceneCanvas):
 
 
 
-        self.image=scene.visuals.Image(self.raw_data,parent=self.view.scene, cmap='grays',clim=[0,255])
-        self.image.set_gl_state('translucent', depth_test=False)
+
+        #self.image=scene.visuals.Image(self.raw_data,parent=self.view.scene, cmap='grays',clim=[0,255])
+        #self.image.set_gl_state('translucent', depth_test=False)
         self.cm=color.get_colormap("nipy_spectral").map(self.rasterm)
         single_plane=self.pos[:,2]==self.plane_ind
         cm=self.cm[single_plane]
@@ -98,7 +99,7 @@ class Canvas(scene.SceneCanvas):
         single_plane=self.pos[:,2]==self.plane_ind
         self.rois_plane=self.pos[single_plane]
         self.rasterm_=self.rasterm[single_plane]
-        self.image.set_data(self.raw_data)
+        #self.image.set_data(self.raw_data)
         cm=self.cm[single_plane]
         colors=vispy.color.ColorArray(cm,alpha=0.8)
         self.p1.set_data(self.rois_plane[:,:2], face_color=colors, symbol='o', size=6,
