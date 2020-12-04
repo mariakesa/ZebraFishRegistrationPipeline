@@ -37,7 +37,7 @@ class MainW(QtGui.QMainWindow):
         self.shp=self.data.shape
         print('data shape: ', self.shp)
         #Data and output arrays
-        self.mask_arr=np.zeros((self.shp[0],self.shp[1],self.shp[1])).astype('float64')
+        self.mask_arr=np.zeros((self.shp[0],self.shp[1],self.shp[2])).astype('float64')
 
         colormap = cm.get_cmap("bwr")
         colormap._init()
@@ -78,7 +78,7 @@ class MainW(QtGui.QMainWindow):
             print('Time to load file: ',end-start)
         self.data=np.array(data).astype('float64')
         for j in range(0,21):
-            self.data[j,:,:] *= 800.0/self.data[j,:,:].max()
+            self.data[j,:,:] *= 3500.0/self.data[j,:,:].max()
         self.data_masked=copy.deepcopy(self.data)
 
     def set_image(self):
@@ -129,14 +129,14 @@ class MainW(QtGui.QMainWindow):
 
         print('Segmenting plane: ', self.plane_ind)
 
-        x=np.arange(0,1024)
-        y=np.arange(0,1024)
+        x=np.arange(0,self.shp[1])
+        y=np.arange(0,self.shp[2])
         xv, yv = np.meshgrid(x, y, indexing='xy')
         points = np.hstack((xv.reshape((-1,1)), yv.reshape((-1,1))))
 
         path = matplotlib.path.Path(self.img.pt_lst)
         mask = path.contains_points(points)
-        mask=mask.reshape(1024,1024).astype('float64')
+        mask=mask.reshape(self.shp[1],self.shp[2]).astype('float64')
 
         self.data_masked[self.plane_ind,:,:][mask==0]=0
 
