@@ -26,10 +26,12 @@ from vispy import visuals
 
 class Canvas(scene.SceneCanvas):
 
-    def __init__(self):
+    def __init__(self,filename):
         scene.SceneCanvas.__init__(self,keys='interactive', size=(1024, 1024))
 
         self.unfreeze()
+
+        self.filename=filename
 
         self.plane_ind=0
 
@@ -46,15 +48,7 @@ class Canvas(scene.SceneCanvas):
 
 
     def load_data(self):
-        #filename='C:/Users/koester_lab/Documents/Maria/registered/fish2_6dpf_medium_aligned_andreas.h5'
-        #filename='//ZMN-HIVE/User-Data/Maria/Registered/fish2_6dpf_medium_aligned_andreas.h5'
-        #filename='C:/Users/koester_lab/Documents/Maria/registered/fish9_6dpf_medium_aligned_andreas.h5'
-        filename='Y:/Maria/detrended/fish2_6dpf_medium_detrended.h5'
-        filename='C:/Users/koester_lab/Documents/Maria/masked/fish2_6dpf_medium_masked.h5'
-        filename='Y:/Maria/Registered/fish04_6dpf_amph_aligned_andreas.h5'
-        filename='C:/Users/koester_lab/Documents/Maria/registered/fish04_6dpf_amph_aligned_carsen.h5'
-        filename='//ZMN-HIVE/User-Data/Maria/check_registration/control/fish20_6dpf_medium_aligned.h5'
-        with h5py.File(filename, "r") as f:
+        with h5py.File(self.filename, "r") as f:
             # List all groups
             print("Loading raw data from a plane...")
             start=time.time()
@@ -62,9 +56,7 @@ class Canvas(scene.SceneCanvas):
             end=time.time()
             print('Time to load raw data file: ',end-start)
         for j in range(0,self.raw_data.shape[0]):
-            self.raw_data[j,:,:] *= 200.0/(self.raw_data[j,:,:].max()+0.00001)
-
-
+            self.raw_data[j,:,:] *= 1000.0/(self.raw_data[j,:,:].max()+0.00001)
 
 class MainWindow(QMainWindow):
     def __init__(self, canvas=None,parent=None):
@@ -73,7 +65,7 @@ class MainWindow(QMainWindow):
         widget = QWidget()
         self.setCentralWidget(widget)
         self.l0 = QGridLayout()
-        self.l0.addWidget(canvas.native)
+        self.l0.addWidget(self.canvas.native)
         self.pl_ind_box=QLineEdit()
         self.pl_ind_box.setText("0")
         self.pl_ind_box.setFixedWidth(35)
@@ -90,33 +82,31 @@ class MainWindow(QMainWindow):
         self.timer.connect(self.update)
         self.timer.start(0)
         self.timer.interval=0.1
-        canvas.i=0
+        self.canvas.i=0
 
     def update(self,ev):
-        canvas.image.set_data(canvas.raw_data[canvas.i,:,:])
-        #print(canvas.raw_data[canvas.i,:,:])
-        print(canvas.i)
-        canvas.time_text.text=str(canvas.i)
-        canvas.i+=1
+        self.canvas.image.set_data(self.canvas.raw_data[self.canvas.i,:,:])
+        self.canvas.time_text.text=str(self.canvas.i)
+        self.canvas.i+=1
 
         #im=canvas.render()
         #self.writer.append_data(im)
-        if canvas.i>=canvas.raw_data.shape[0]:
+        if self.canvas.i>=self.canvas.raw_data.shape[0]:
             #self.writer.close()
             #import sys
             #sys.exit()
-            canvas.i=0
+            self.canvas.i=0
 
-        canvas.update()
+        self.canvas.update()
 
     def change_plane_ind(self):
-        canvas.plane_ind=int(self.pl_ind_box.text())
-        canvas.load_data()
+        self.canvas.plane_ind=int(self.pl_ind_box.text())
+        self.canvas.load_data()
         self.timer_init()
 
-def run_movie_gui():
+def run_movie_gui(filename):
     print('Starting up movie gui...')
-    canvas = Canvas()
+    canvas = Canvas(filename)
     vispy.use('PyQt5')
     w = MainWindow(canvas)
     w.show()

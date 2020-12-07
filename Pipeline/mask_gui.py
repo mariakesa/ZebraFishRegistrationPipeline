@@ -78,7 +78,7 @@ class MainW(QtGui.QMainWindow):
             print('Time to load file: ',end-start)
         self.data=np.array(data).astype('float64')
         for j in range(0,21):
-            self.data[j,:,:] *= 3500.0/self.data[j,:,:].max()
+            self.data[j,:,:] *= 1000.0/self.data[j,:,:].max()
         self.data_masked=copy.deepcopy(self.data)
 
     def set_image(self):
