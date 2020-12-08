@@ -6,6 +6,8 @@ sys.path.insert(0, 'C:/Users/koester_lab/Documents/Maria/ZebraFishRegistrationPi
 from movie_gui import run_movie_gui
 from detrend_data import detrend_file
 from segmentation import segmentation
+from rastermap import Rastermap
+from dff import compute_dff
 
 def masking(filename,reg_t_ind,save_folder_mask):
     f_str=os.path.split(filename)[-1]
@@ -46,6 +48,17 @@ def segment(filename,save_folder_detrending,save_folder_segmentation):
     data_path=os.path.join(os.path.normpath(save_folder_detrending),detr_f_str)
     #data_path
     segmentation(data_path,save_path_std,save_path_roi,save_path_traces)
+
+def dff(filename,segmentation_folder,save_folder_dff):
+    f_str=os.path.split(filename)[-1]
+    dff_f_str=f_str.replace('aligned.h5','dff.npy')
+    traces_f_str=f_str.replace('aligned.h5','traces.npy')
+    save_dff_path=os.path.join(os.path.normpath(save_folder_dff),dff_f_str)
+    traces_path=os.path.join(os.path.normpath(segmentation_folder),traces_f_str)
+    compute_dff(traces_path,save_dff_path)
+
+def rastermap(filename, save_folder_rastermap):
+    model = Rastermap(n_components=1, n_X=100).fit(X)
     #print(save_path)
 #Detrending
 #save_folder_detrending,save_folder_segmentation,save_folder_dff,save_folder_rastermap
@@ -55,8 +68,10 @@ save_folder_mask='//ZMN-HIVE/User-Data/Maria/masked'
 save_folder_masked='//ZMN-HIVE/User-Data/Maria/masked'
 save_folder_detrending='//ZMN-HIVE/User-Data/Maria/detrended'
 save_folder_segmentation='//ZMN-HIVE/User-Data/Maria/segmented'
+save_folder_dff='//ZMN-HIVE/User-Data/Maria/dff'
 if __name__=='__main__':
     #pipeline(filename,0,save_folder_mask,save_folder_masked,0,0,0)
     #masking(filename,reg_t_ind,save_folder_mask)
     #detrending(filename,save_folder_mask,save_folder_detrending)
-    segment(filename,save_folder_detrending,save_folder_segmentation)
+    #segment(filename,save_folder_detrending,save_folder_segmentation)
+    dff(filename,save_folder_segmentation,save_folder_dff)
