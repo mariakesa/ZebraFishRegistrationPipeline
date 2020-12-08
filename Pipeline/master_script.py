@@ -6,8 +6,9 @@ sys.path.insert(0, 'C:/Users/koester_lab/Documents/Maria/ZebraFishRegistrationPi
 from movie_gui import run_movie_gui
 from detrend_data import detrend_file
 from segmentation import segmentation
-from rastermap import Rastermap
+from rastermap_comp import rastermap_comp
 from dff import compute_dff
+from rastermap_viz import run_rm_viz
 
 def masking(filename,reg_t_ind,save_folder_mask):
     f_str=os.path.split(filename)[-1]
@@ -57,9 +58,22 @@ def dff(filename,segmentation_folder,save_folder_dff):
     traces_path=os.path.join(os.path.normpath(segmentation_folder),traces_f_str)
     compute_dff(traces_path,save_dff_path)
 
-def rastermap(filename, save_folder_rastermap):
-    model = Rastermap(n_components=1, n_X=100).fit(X)
-    #print(save_path)
+def rastermap_save(filename, dff_folder, save_folder_rastermap):
+    f_str=os.path.split(filename)[-1]
+    dff_f_str=f_str.replace('aligned.h5','dff.npy')
+    rastermap_f_str=f_str.replace('aligned.h5','rm.npy')
+    dff_path=os.path.join(os.path.normpath(dff_folder),dff_f_str)
+    rastermap_save_path=os.path.join(os.path.normpath(save_folder_rastermap),rastermap_f_str)
+    rastermap_comp(dff_path,rastermap_save_path)
+
+def visualize_rastermap(filename,segmentation_folder,rastermap_folder):
+    f_str=os.path.split(filename)[-1]
+    rastermap_f_str=f_str.replace('aligned.h5','rm.npy')
+    rois_f_str=f_str.replace('aligned.h5','rois.npy')
+    rm_path=os.path.join(os.path.normpath(rastermap_folder),rastermap_f_str)
+    roi_path=os.path.join(os.path.normpath(segmentation_folder),rois_f_str)
+    run_rm_viz(roi_path,rm_path)
+
 #Detrending
 #save_folder_detrending,save_folder_segmentation,save_folder_dff,save_folder_rastermap
 filename='//ZMN-HIVE/User-Data/Maria/check_registration/control/fish17_6dpf_medium_aligned.h5'
@@ -69,9 +83,12 @@ save_folder_masked='//ZMN-HIVE/User-Data/Maria/masked'
 save_folder_detrending='//ZMN-HIVE/User-Data/Maria/detrended'
 save_folder_segmentation='//ZMN-HIVE/User-Data/Maria/segmented'
 save_folder_dff='//ZMN-HIVE/User-Data/Maria/dff'
+save_folder_rastermap='//ZMN-HIVE/User-Data/Maria/rastermap'
 if __name__=='__main__':
     #pipeline(filename,0,save_folder_mask,save_folder_masked,0,0,0)
     #masking(filename,reg_t_ind,save_folder_mask)
     #detrending(filename,save_folder_mask,save_folder_detrending)
     #segment(filename,save_folder_detrending,save_folder_segmentation)
-    dff(filename,save_folder_segmentation,save_folder_dff)
+    #dff(filename,save_folder_segmentation,save_folder_dff)
+    #rastermap_save(filename, save_folder_dff, save_folder_rastermap)
+    visualize_rastermap(filename,save_folder_segmentation,save_folder_rastermap)
