@@ -9,6 +9,7 @@ from segmentation import segmentation
 from rastermap_comp import rastermap_comp
 from dff import compute_dff
 from rastermap_viz import run_rm_viz
+from viz_gui import run_complete_viz
 
 def masking(filename,reg_t_ind,save_folder_mask):
     f_str=os.path.split(filename)[-1]
@@ -74,9 +75,18 @@ def visualize_rastermap(filename,segmentation_folder,rastermap_folder):
     roi_path=os.path.join(os.path.normpath(segmentation_folder),rois_f_str)
     run_rm_viz(roi_path,rm_path)
 
+def complete_viz(filename,roi_folder,dff_folder):
+    f_str=os.path.split(filename)[-1]
+    dff_f_str=f_str.replace('aligned.h5','dff.npy')
+    dff_path=os.path.join(os.path.normpath(dff_folder),dff_f_str)
+    rois_f_str=f_str.replace('aligned.h5','rois.npy')
+    roi_path=os.path.join(os.path.normpath(roi_folder),rois_f_str)
+    run_complete_viz(filename,roi_path,dff_path)
+
 #Detrending
 #save_folder_detrending,save_folder_segmentation,save_folder_dff,save_folder_rastermap
 filename='//ZMN-HIVE/User-Data/Maria/check_registration/control/fish17_6dpf_medium_aligned.h5'
+filename='//ZMN-HIVE/User-Data/Maria/check_registration/amphetamine/fish44_6dpf_amph_aligned.h5'
 reg_t_ind=0
 save_folder_mask='//ZMN-HIVE/User-Data/Maria/masked'
 save_folder_masked='//ZMN-HIVE/User-Data/Maria/masked'
@@ -91,4 +101,5 @@ if __name__=='__main__':
     #segment(filename,save_folder_detrending,save_folder_segmentation)
     #dff(filename,save_folder_segmentation,save_folder_dff)
     #rastermap_save(filename, save_folder_dff, save_folder_rastermap)
-    visualize_rastermap(filename,save_folder_segmentation,save_folder_rastermap)
+    #visualize_rastermap(filename,save_folder_segmentation,save_folder_rastermap)
+    complete_viz(filename,save_folder_segmentation, save_folder_dff)
