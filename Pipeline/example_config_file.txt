@@ -1,0 +1,2 @@
+filepath: //ZMN-HIVE/User-Data/Maria/check_registration/amphetamine/fish44_6dpf_amph_aligned.h5
+save_folder_mask: //ZMN-HIVE/User-Data/Maria/masked 
