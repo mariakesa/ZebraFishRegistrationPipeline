@@ -10,6 +10,8 @@ from matplotlib import cm
 import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib
+sys.path.insert(0, 'C:/Users/koester_lab/Documents/Maria/ZebraFishRegistrationPipeline/Visualization')
+from detrending_viz import detrending_verify
 
 def parse_config_file(config_file):
     config_file=open(config_file,"r")
@@ -81,6 +83,12 @@ class PressToSelectButton(QLabel):
             self.mainw.config_dict['save_folder_masked'],
             self.mainw.config_dict['save_folder_detrending'])
 
+        if self.type=='detrend_verify_plot':
+            detrending_verify(self.mainw.config_dict['filepath'],
+            self.mainw.config_dict['save_folder_detrending'],
+            self.mainw.config_dict['save_folder_masked'],
+            plane_ind=10)
+
 
 class PilotGUI(QMainWindow):
     def __init__(self, config_file=''):
@@ -110,7 +118,11 @@ class PilotGUI(QMainWindow):
         #Detrending button
         color_ind=25
         self.detrend_button=PressToSelectButton('Detrend','detrending',self,color_ind)
-        self.l0.addWidget(self.detrend_button,16,0)
+        self.l0.addWidget(self.detrend_button,8,0)
+
+        color_ind=100
+        self.detrend_verif_button=PressToSelectButton('Verify detrending','detrend_verify_plot',self,color_ind)
+        self.l0.addWidget(self.detrend_verif_button,16,0)
 
     def menu_config_load(self):
         self.main_menu=self.menuBar()
