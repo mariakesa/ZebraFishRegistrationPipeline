@@ -29,7 +29,7 @@ class PressToSelectButton(QLabel):
 
     color_ind: index of the color map of the box.
     '''
-    def __init__(self,type,text,mainw,color_ind):
+    def __init__(self,text,type,mainw,color_ind):
         super(PressToSelectButton, self).__init__()
         self.setAutoFillBackground(True)
         self.type=type
