@@ -14,7 +14,7 @@ from transparent_cells import run_transparent_cells
 from os.path import isfile, join
 from os import listdir
 
-def masking(filename,reg_t_ind,save_folder_mask):
+def masking(filename,reg_t_ind,save_folder_mask,save_folder_masked):
     f_str=os.path.split(filename)[-1]
     #Masking
     filename=os.path.normpath(filename)
@@ -23,8 +23,8 @@ def masking(filename,reg_t_ind,save_folder_mask):
     masked_f_str=f_str.replace('aligned.h5','masked.h5')
     save_mask_filename=os.path.join(os.path.normpath(save_folder_mask),mask_f_str)
     save_masked_filename=os.path.join(os.path.normpath(save_folder_masked),masked_f_str)
-    save_mask_in_folder= [f for f in listdir(path.normpath(save_folder_mask)) if isfile(save_mask_filename)]
-    save_masked_in_folder= [f for f in listdir(path.normpath(save_folder_masked)) if isfile(save_masked_filename)]
+    save_mask_in_folder= [f for f in listdir(os.path.normpath(save_folder_mask)) if isfile(save_mask_filename)]
+    save_masked_in_folder= [f for f in listdir(os.path.normpath(save_folder_masked)) if isfile(save_masked_filename)]
     if len(save_mask_in_folder)==0 or len(save_masked_in_folder)==0:
         Process(target = run_mask_gui, args=(filename,save_masked_filename,save_mask_filename,reg_t_ind)).start()
         Process(target = run_movie_gui, args=(filename,)).start()

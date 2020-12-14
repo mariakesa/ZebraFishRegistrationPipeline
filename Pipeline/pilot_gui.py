@@ -29,7 +29,10 @@ class PilotGUI(QMainWindow):
 
         #Mask button
         self.mask_button=self.ens_selector=QtGui.QPushButton('Masking tool')
-        self.mask_button.clicked.connect(lambda: masking)
+        self.mask_button.clicked.connect(lambda:
+                        masking(self.config_dict['filepath'],0,
+                        self.config_dict['save_folder_mask'],
+                        self.config_dict['save_folder_masked']))
         self.l0.addWidget(self.mask_button,4,0)
 
     def menu_config_load(self):
