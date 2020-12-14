@@ -1,10 +1,15 @@
 import argparse
 import os
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow
+from PyQt5.QtWidgets import QApplication, QMainWindow,QLabel
 import pyqtgraph as pg
-from master_script import masking
+from master_script import masking, detrending
 from PyQt5 import QtGui
+from matplotlib.colors import hsv_to_rgb
+from matplotlib import cm
+import matplotlib.pyplot as plt
+import numpy as np
+import matplotlib
 
 def parse_config_file(config_file):
     config_file=open(config_file,"r")
@@ -12,9 +17,75 @@ def parse_config_file(config_file):
     lines=config_file.readlines()
     print(lines)
 
+class PressToSelectButton(QLabel):
+    '''
+    Class for a single clickable box in a heatmap boxplot layout.
+
+    Attributes
+    -----------
+    ep_win: the ensemble pursuit window.
+
+    ensemble: which ensemble the box represents.
+
+    color_ind: index of the color map of the box.
+    '''
+    def __init__(self,type,text,mainw,color_ind):
+        super(PressToSelectButton, self).__init__()
+        self.setAutoFillBackground(True)
+        self.type=type
+        self.mainw=mainw
+        self.color_ind=color_ind
+        #self.V_plot=V_plot
+        palette = self.palette()
+        colormap = cm.get_cmap("cool")  # cm.get_cmap("CMRmap")
+        colormap._init()
+        lut = (colormap._lut).view(np.ndarray)  # Convert matplotlib colormap from 0-1 to 0 -255 for Qt
+        color=matplotlib.colors.rgb2hex(lut[color_ind])
+        self.qcolor=QtGui.QColor(color)
+        palette.setColor(QtGui.QPalette.Window, self.qcolor)
+
+        self.setPalette(palette)
+
+        self.setText(text)
+
+        self.setFixedWidth(500)
+        self.setFixedHeight(100)
+
+        self.setFont(QtGui.QFont('SansSerif', 30))
+        self.setStyleSheet("color: white;")
+
+
+    def mousePressEvent(self, event):
+        '''
+        An event for selecting a box and passing the selected ensemble index to
+        the EP window class. Passing the ensemble to the EP window class is
+        necessary for the select_cells function in the main window to work.
+
+        Parameters
+        -----------
+        event: mouse press event on the ensemble box.
+        '''
+
+        palette = self.palette()
+        self.qcolor.setAlpha(100)
+        palette.setColor(QtGui.QPalette.Window, self.qcolor)
+
+        self.setPalette(palette)
+
+        if self.type=='masking':
+            masking(self.mainw.config_dict['filepath'],0,
+                            self.mainw.config_dict['save_folder_mask'],
+                            self.mainw.config_dict['save_folder_masked'])
+        if self.type=='detrending':
+            detrending(self.mainw.config_dict['filepath'],
+            self.mainw.config_dict['save_folder_masked'],
+            self.mainw.config_dict['save_folder_detrending'])
+
+
 class PilotGUI(QMainWindow):
     def __init__(self, config_file=''):
         super(PilotGUI, self).__init__()
+        self.setStyleSheet("QMainWindow {background: 'black';}")
         pg.setConfigOptions(imageAxisOrder='row-major')
         self.setGeometry(70,70,1100,900)
         self.setWindowTitle('Visualize data')
@@ -28,12 +99,18 @@ class PilotGUI(QMainWindow):
         #Register button
 
         #Mask button
-        self.mask_button=self.ens_selector=QtGui.QPushButton('Masking tool')
-        self.mask_button.clicked.connect(lambda:
-                        masking(self.config_dict['filepath'],0,
-                        self.config_dict['save_folder_mask'],
-                        self.config_dict['save_folder_masked']))
+        color_ind=1
+        self.mask_button=PressToSelectButton('Masking tool','masking',self,color_ind)
+        #self.mask_button.clicked.connect(lambda:
+                        #masking(self.config_dict['filepath'],0,
+                        #self.config_dict['save_folder_mask'],
+                        #self.config_dict['save_folder_masked']))
         self.l0.addWidget(self.mask_button,4,0)
+
+        #Detrending button
+        color_ind=25
+        self.detrend_button=PressToSelectButton('Detrend','detrending',self,color_ind)
+        self.l0.addWidget(self.detrend_button,16,0)
 
     def menu_config_load(self):
         self.main_menu=self.menuBar()
@@ -51,6 +128,7 @@ class PilotGUI(QMainWindow):
         self.config_file = name[0]
         self.parse_config_file()
 
+
     def parse_config_file(self):
         config_file=open(self.config_file,"r")
         print(config_file)
@@ -65,6 +143,8 @@ class PilotGUI(QMainWindow):
                 self.config_dict['save_folder_mask']=el[1]
             if el[0]=='save_folder_masked':
                 self.config_dict['save_folder_masked']=el[1]
+            if el[0]=='save_folder_detrending':
+                self.config_dict['save_folder_detrending']=el[1]
         print(self.config_dict)
 
 
