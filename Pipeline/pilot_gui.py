@@ -34,7 +34,7 @@ class PilotGUI(QMainWindow):
 
     def menu_config_load(self):
         self.main_menu=self.menuBar()
-        self.config = self.main_menu.addMenu('&Config')
+        self.config = self.main_menu.addMenu('&Config file')
         self.load_config = QtGui.QAction("Load config file", self)
         self.load_config.triggered.connect(lambda: self.load_dialog())
         self.config.addAction(self.load_config)
@@ -53,6 +53,17 @@ class PilotGUI(QMainWindow):
         print(config_file)
         lines=config_file.readlines()
         print(lines)
+        self.config_dict={}
+        for line in lines:
+            el=line.strip('\n').split(' ')
+            if el[0]=='filepath':
+                self.config_dict['filepath']=el[1]
+            if el[0]=='save_folder_mask':
+                self.config_dict['save_folder_mask']=el[1]
+            if el[0]=='save_folder_masked':
+                self.config_dict['save_folder_masked']=el[1]
+        print(self.config_dict)
+
 
 def main():
     app = QtGui.QApplication(sys.argv)
