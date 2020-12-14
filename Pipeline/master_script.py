@@ -37,7 +37,11 @@ def detrending(filename, save_folder_mask,save_folder_detrending):
     detr_f_str=f_str.replace('aligned.h5','detrended.h5')
     masked_file=os.path.join(os.path.normpath(save_folder_mask),mask_f_str)
     save_detr_filename=os.path.join(os.path.normpath(save_folder_detrending),detr_f_str)
-    detrend_file(masked_file,save_detr_filename)
+    detrended_in_folder= [f for f in listdir(os.path.normpath(save_folder_detrending)) if isfile(save_detr_filename)]
+    if len(detrended_in_folder)==0:
+        detrend_file(masked_file,save_detr_filename)
+    else:
+        print('Detrending on file already done!')
 
 def cell_extraction(filename, dat_to_seg_folder, save_folder_segmentation):
     f_str=os.path.split(filename)[-1]
