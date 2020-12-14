@@ -10,6 +10,9 @@ from rastermap_comp import rastermap_comp
 from dff import compute_dff
 from rastermap_viz import run_rm_viz
 from viz_gui import run_complete_viz
+from transparent_cells import run_transparent_cells
+from os.path import isfile, join
+from os import listdir
 
 def masking(filename,reg_t_ind,save_folder_mask):
     f_str=os.path.split(filename)[-1]
@@ -20,8 +23,13 @@ def masking(filename,reg_t_ind,save_folder_mask):
     masked_f_str=f_str.replace('aligned.h5','masked.h5')
     save_mask_filename=os.path.join(os.path.normpath(save_folder_mask),mask_f_str)
     save_masked_filename=os.path.join(os.path.normpath(save_folder_masked),masked_f_str)
-    Process(target = run_mask_gui, args=(filename,save_masked_filename,save_mask_filename,reg_t_ind)).start()
-    Process(target = run_movie_gui, args=(filename,)).start()
+    save_mask_in_folder= [f for f in listdir(path.normpath(save_folder_mask)) if isfile(save_mask_filename)]
+    save_masked_in_folder= [f for f in listdir(path.normpath(save_folder_masked)) if isfile(save_masked_filename)]
+    if len(save_mask_in_folder)==0 or len(save_masked_in_folder)==0:
+        Process(target = run_mask_gui, args=(filename,save_masked_filename,save_mask_filename,reg_t_ind)).start()
+        Process(target = run_movie_gui, args=(filename,)).start()
+    else:
+        print('Masked or mask file already exists!')
 
 def detrending(filename, save_folder_mask,save_folder_detrending):
     f_str=os.path.split(filename)[-1]
@@ -83,6 +91,14 @@ def complete_viz(filename,roi_folder,dff_folder):
     roi_path=os.path.join(os.path.normpath(roi_folder),rois_f_str)
     run_complete_viz(filename,roi_path,dff_path)
 
+def transparent_cells(filename,roi_folder,dff_folder):
+    f_str=os.path.split(filename)[-1]
+    dff_f_str=f_str.replace('aligned.h5','dff.npy')
+    dff_path=os.path.join(os.path.normpath(dff_folder),dff_f_str)
+    rois_f_str=f_str.replace('aligned.h5','rois.npy')
+    roi_path=os.path.join(os.path.normpath(roi_folder),rois_f_str)
+    run_transparent_cells(filename,roi_path,dff_path)
+
 #Detrending
 #save_folder_detrending,save_folder_segmentation,save_folder_dff,save_folder_rastermap
 filename='//ZMN-HIVE/User-Data/Maria/check_registration/control/fish17_6dpf_medium_aligned.h5'
@@ -102,4 +118,5 @@ if __name__=='__main__':
     #dff(filename,save_folder_segmentation,save_folder_dff)
     #rastermap_save(filename, save_folder_dff, save_folder_rastermap)
     #visualize_rastermap(filename,save_folder_segmentation,save_folder_rastermap)
-    complete_viz(filename,save_folder_segmentation, save_folder_dff)
+    #complete_viz(filename,save_folder_segmentation, save_folder_dff)
+    transparent_cells(filename,save_folder_segmentation, save_folder_dff)
