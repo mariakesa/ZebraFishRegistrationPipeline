@@ -50,7 +50,7 @@ class PressToSelectButton(QLabel):
 
         self.setText(text)
 
-        self.setFixedWidth(500)
+        self.setFixedWidth(800)
         self.setFixedHeight(100)
 
         self.setFont(QtGui.QFont('SansSerif', 30))
@@ -123,6 +123,14 @@ class PilotGUI(QMainWindow):
         color_ind=100
         self.detrend_verif_button=PressToSelectButton('Verify detrending','detrend_verify_plot',self,color_ind)
         self.l0.addWidget(self.detrend_verif_button,16,0)
+
+        color_ind=150
+        self.segment_raw_button=PressToSelectButton('Segment raw','segment_raw',self,color_ind)
+        self.l0.addWidget(self.segment_raw_button,20,0)
+
+        color_ind=200
+        self.segment_detrended_button=PressToSelectButton('Segment detrended','segment_detrended',self,color_ind)
+        self.l0.addWidget(self.segment_detrended_button,24,0)
 
     def menu_config_load(self):
         self.main_menu=self.menuBar()
