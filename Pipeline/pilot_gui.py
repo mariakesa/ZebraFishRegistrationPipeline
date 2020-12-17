@@ -133,11 +133,11 @@ class PilotGUI(QMainWindow):
 
         color_ind=200
         self.dff_raw_button=PressToSelectButton('Calculate dff raw','dff_raw',self,color_ind)
-        self.l0.addWidget(self.calculate_dff_button,28,0)
+        self.l0.addWidget(self.dff_raw_button,28,0)
 
         color_ind=200
         self.dff_detrended_button=PressToSelectButton('Calculate dff detrended','dff_detrended',self,color_ind)
-        self.l0.addWidget(self.calculate_dff_button,32,0)
+        self.l0.addWidget(self.dff_detrended_button,32,0)
 
     def menu_config_load(self):
         self.main_menu=self.menuBar()
