@@ -3,7 +3,7 @@ import os
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow,QLabel
 import pyqtgraph as pg
-from master_script import masking, detrending
+from master_script import masking, detrending, segment_detrended, segment_raw, dff_raw, dff_detrended
 from PyQt5 import QtGui
 from matplotlib.colors import hsv_to_rgb
 from matplotlib import cm
@@ -20,17 +20,6 @@ def parse_config_file(config_file):
     print(lines)
 
 class PressToSelectButton(QLabel):
-    '''
-    Class for a single clickable box in a heatmap boxplot layout.
-
-    Attributes
-    -----------
-    ep_win: the ensemble pursuit window.
-
-    ensemble: which ensemble the box represents.
-
-    color_ind: index of the color map of the box.
-    '''
     def __init__(self,text,type,mainw,color_ind):
         super(PressToSelectButton, self).__init__()
         self.setAutoFillBackground(True)
@@ -58,16 +47,6 @@ class PressToSelectButton(QLabel):
 
 
     def mousePressEvent(self, event):
-        '''
-        An event for selecting a box and passing the selected ensemble index to
-        the EP window class. Passing the ensemble to the EP window class is
-        necessary for the select_cells function in the main window to work.
-
-        Parameters
-        -----------
-        event: mouse press event on the ensemble box.
-        '''
-
         palette = self.palette()
         self.qcolor.setAlpha(100)
         palette.setColor(QtGui.QPalette.Window, self.qcolor)
@@ -88,6 +67,26 @@ class PressToSelectButton(QLabel):
             self.mainw.config_dict['save_folder_detrending'],
             self.mainw.config_dict['save_folder_masked'],
             plane_ind=10)
+
+        if self.type=='segment_raw':
+            segment_raw(self.mainw.config_dict['filepath'],
+            self.mainw.config_dict['save_folder_masked'],
+            self.mainw.config_dict['save_folder_segmentation_raw'])
+
+        if self.type=='segment_detrended':
+            segment_detrended(self.mainw.config_dict['filepath'],
+            self.mainw.config_dict['save_folder_detrending'],
+            self.mainw.config_dict['save_folder_segmentation_detrended'])
+
+        if self.type=='dff_raw':
+            dff_raw(self.mainw.config_dict['filepath'],
+            self.mainw.config_dict['save_folder_segmentation_raw'],
+            self.mainw.config_dict['save_folder_dff_raw'])
+
+        if self.type=='dff_detrended':
+            dff_detrended(self.mainw.config_dict['filepath'],
+            self.mainw.config_dict['save_folder_segmentation_detrended'],
+            self.mainw.config_dict['save_folder_dff_detrended'])
 
 
 class PilotGUI(QMainWindow):
@@ -122,7 +121,7 @@ class PilotGUI(QMainWindow):
 
         color_ind=100
         self.detrend_verif_button=PressToSelectButton('Verify detrending','detrend_verify_plot',self,color_ind)
-        self.l0.addWidget(self.detrend_verif_button,16,0)
+        self.l0.addWidget(self.detrend_verif_button,8,6)
 
         color_ind=150
         self.segment_raw_button=PressToSelectButton('Segment raw','segment_raw',self,color_ind)
@@ -131,6 +130,14 @@ class PilotGUI(QMainWindow):
         color_ind=200
         self.segment_detrended_button=PressToSelectButton('Segment detrended','segment_detrended',self,color_ind)
         self.l0.addWidget(self.segment_detrended_button,24,0)
+
+        color_ind=200
+        self.dff_raw_button=PressToSelectButton('Calculate dff raw','dff_raw',self,color_ind)
+        self.l0.addWidget(self.calculate_dff_button,28,0)
+
+        color_ind=200
+        self.dff_detrended_button=PressToSelectButton('Calculate dff detrended','dff_detrended',self,color_ind)
+        self.l0.addWidget(self.calculate_dff_button,32,0)
 
     def menu_config_load(self):
         self.main_menu=self.menuBar()
@@ -165,6 +172,15 @@ class PilotGUI(QMainWindow):
                 self.config_dict['save_folder_masked']=el[1]
             if el[0]=='save_folder_detrending':
                 self.config_dict['save_folder_detrending']=el[1]
+            if el[0]=='save_folder_segmentation_detrended':
+                self.config_dict['save_folder_segmentation_detrended']=el[1]
+            if el[0]=='save_folder_segmentation_raw':
+                self.config_dict['save_folder_segmentation_raw']=el[1]
+            if el[0]=='save_folder_dff_detrended':
+                self.config_dict['save_folder_dff_detrended']=el[1]
+            if el[0]=='save_folder_dff_raw':
+                self.config_dict['save_folder_dff_raw']=el[1]
+
         print(self.config_dict)
 
 

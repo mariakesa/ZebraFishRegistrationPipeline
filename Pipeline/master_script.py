@@ -52,23 +52,40 @@ def cell_extraction(filename, dat_to_seg_folder, save_folder_segmentation):
         dat_f_str=f_str.replace('aligned.h5','masked.h5')
     segm_f_str=f_str.replace('aligned.h5','detrended.h5')
 
-def segment(filename,save_folder_detrending,save_folder_segmentation):
+def segment_detrended(filename,save_folder_detrending,save_folder_segmentation_detrended):
     f_str=os.path.split(filename)[-1]
     detr_f_str=f_str.replace('aligned.h5','detrended.h5')
-    save_path=os.path.join(os.path.normpath(save_folder_segmentation),f_str)
-    save_path_std=save_path.replace('aligned.h5','std_dev.h5')
-    save_path_roi=save_path.replace('aligned.h5','rois.npy')
-    save_path_traces=save_path.replace('aligned.h5','traces.npy')
+    save_path=os.path.join(os.path.normpath(save_folder_segmentation_detrended),f_str)
+    save_path_std=save_path.replace('aligned.h5','detrended_std_dev.h5')
+    save_path_roi=save_path.replace('aligned.h5','detrended_rois.npy')
+    save_path_traces=save_path.replace('aligned.h5','detrended_traces.npy')
     data_path=os.path.join(os.path.normpath(save_folder_detrending),detr_f_str)
-    #data_path
     segmentation(data_path,save_path_std,save_path_roi,save_path_traces)
 
-def dff(filename,segmentation_folder,save_folder_dff):
+def segment_raw(filename,save_folder_masked,save_folder_segmentation_raw):
     f_str=os.path.split(filename)[-1]
-    dff_f_str=f_str.replace('aligned.h5','dff.npy')
-    traces_f_str=f_str.replace('aligned.h5','traces.npy')
+    masked_f_str=f_str.replace('aligned.h5','masked.h5')
+    save_path=os.path.join(os.path.normpath(save_folder_segmentation_raw),f_str)
+    save_path_std=save_path.replace('aligned.h5','raw_std_dev.h5')
+    save_path_roi=save_path.replace('aligned.h5','raw_rois.npy')
+    save_path_traces=save_path.replace('aligned.h5','raw_traces.npy')
+    data_path=os.path.join(os.path.normpath(save_folder_masked),masked_f_str)
+    segmentation(data_path,save_path_std,save_path_roi,save_path_traces)
+
+def dff_raw(filename,save_folder_segmentation_raw,save_folder_dff_raw):
+    f_str=os.path.split(filename)[-1]
+    dff_f_str=f_str.replace('aligned.h5','raw_dff.npy')
+    traces_f_str=f_str.replace('aligned.h5','raw_traces.npy')
     save_dff_path=os.path.join(os.path.normpath(save_folder_dff),dff_f_str)
     traces_path=os.path.join(os.path.normpath(segmentation_folder),traces_f_str)
+    compute_dff(traces_path,save_dff_path)
+
+def dff_detrended(filename,save_folder_segmentation_detrended,save_folder_dff_detrended):
+    f_str=os.path.split(filename)[-1]
+    dff_f_str=f_str.replace('aligned.h5','detrended_dff.npy')
+    traces_f_str=f_str.replace('aligned.h5','detrended_traces.npy')
+    save_dff_path=os.path.join(os.path.normpath(save_folder_dff_detrended),dff_f_str)
+    traces_path=os.path.join(os.path.normpath(save_folder_segmentation_detrended),traces_f_str)
     compute_dff(traces_path,save_dff_path)
 
 def rastermap_save(filename, dff_folder, save_folder_rastermap):
