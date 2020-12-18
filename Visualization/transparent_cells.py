@@ -17,39 +17,13 @@ use_app('PyQt5')
 from vispy import scene
 from vispy import color
 from vispy.color.colormap import Colormap
+from vispy.scene.cameras import MagnifyCamera
 
 import h5py
 
 
 import imageio
 from vispy import visuals
-
-from PyQt5.QtWidgets import QApplication, QMainWindow
-import sys
-from PyQt5 import QtCore, QtGui, QtWidgets
-
-
-import time
-import numpy as np
-from vispy import app
-import vispy
-
-from PyQt5.QtWidgets import *
-import vispy.app
-import sys
-
-from vispy.app import use_app
-use_app('PyQt5')
-from vispy import scene
-from vispy import color
-from vispy.color.colormap import Colormap
-
-import h5py
-
-
-import imageio
-from vispy import visuals
-
 
 class Canvas(scene.SceneCanvas):
 
@@ -57,6 +31,8 @@ class Canvas(scene.SceneCanvas):
         scene.SceneCanvas.__init__(self,keys='interactive', size=(1024, 1024))
 
         self.unfreeze()
+
+        self._send_hover_events = True
 
         self.plane_ind=0
 
@@ -74,16 +50,21 @@ class Canvas(scene.SceneCanvas):
         self.image=scene.visuals.Image(self.raw_data[0,:,:],parent=self.view.scene, cmap='grays',clim=[0,255])
         self.image.set_gl_state('translucent', depth_test=False)
 
+        size = (1, 1)
+        self.view.camera = MagnifyCamera(mag=3, size_factor=0.1, radius_ratio=0.6)
+        self.view.camera.rect = (0, 0, 1024,1024)
+        self.view.camera.flip = (False, True, False)
+
         colors=vispy.color.ColorArray(cm,alpha=0.8)
-        Scatter2D = scene.visuals.create_visual_node(visuals.MarkersVisual)
+        Scatter2D = scene.visuals.Markers
         self.p1 = Scatter2D(parent=self.view.scene)
-        self.p1.set_data(self.rois_plane[:,:2], face_color=colors, symbol='o', size=8,
-            edge_width=0.5, edge_color='blue')
+        self.p1.set_data(self.rois_plane[:,:2], face_color=None, symbol='o', size=13,
+            edge_width=3, edge_color='blue')
         print(self.min,self.max)
         colormap = color.get_colormap("cool")
-        self.colorbar=scene.visuals.ColorBar(clim=(-1,2),cmap=colormap,orientation='right',size=(100,30),label_str='dF/F',parent=self.view.scene,pos=(100,100),label_color='white')
+        #self.colorbar=scene.visuals.ColorBar(clim=(self.min,self.max),cmap=colormap,orientation='right',size=(100,30),label_str='dF/F',parent=self.view.scene,pos=(100,100),label_color='white')
 
-        self.colorbar.label.font_size = 10
+        #self.colorbar.label.font_size = 10
         #self.colorbar.draw()
         #self.time=0
 
@@ -116,9 +97,7 @@ class Canvas(scene.SceneCanvas):
         single_plane=self.pos[:,2]==self.plane_ind
         self.rois_plane=self.pos[single_plane]
         self.time_s=self.time_s[single_plane]
-        self.time_s_colors=np.nan_to_num(self.time_s)
-        self.time_s_colors[self.time_s_colors>2]=2
-        self.time_s_colors[self.time_s_colors<-1]=-1
+        self.time_s_colors=self.time_s/800
         self.min=np.min(self.time_s)
         self.max=np.max(self.time_s)
 
@@ -150,9 +129,11 @@ class MainWindow(QMainWindow):
     def update(self,ev):
         cm=color.get_colormap("cool").map(self.canvas.time_s_colors[:,self.canvas.i])
         colors=vispy.color.ColorArray(cm,alpha=0.8)
-        self.canvas.p1.set_data(self.canvas.rois_plane[:,:2], face_color=colors, symbol='o', size=8,
-            edge_width=0.5, edge_color='blue')
+        self.canvas.p1.set_data(self.canvas.rois_plane[:,:2], face_color=None, symbol='o', size=13,
+            edge_width=3, edge_color='blue')
         self.canvas.image.set_data(self.canvas.raw_data[self.canvas.i,:,:])
+        size = (1, 1)
+        self.canvas.view.camera.view_changed()
         self.canvas.update()
         #print(canvas.raw_data[canvas.i,:,:])
         print(self.canvas.i)
@@ -165,7 +146,7 @@ class MainWindow(QMainWindow):
         self.canvas.load_data()
         self.timer_init()
 
-def run_complete_viz(aligned_path,roi_path,dff_path):
+def run_transparent_cells(aligned_path,roi_path,dff_path):
     canvas = Canvas(aligned_path,roi_path,dff_path)
     vispy.use('PyQt5')
     w = MainWindow(canvas)
