@@ -76,8 +76,8 @@ def dff_raw(filename,save_folder_segmentation_raw,save_folder_dff_raw):
     f_str=os.path.split(filename)[-1]
     dff_f_str=f_str.replace('aligned.h5','raw_dff.npy')
     traces_f_str=f_str.replace('aligned.h5','raw_traces.npy')
-    save_dff_path=os.path.join(os.path.normpath(save_folder_dff),dff_f_str)
-    traces_path=os.path.join(os.path.normpath(segmentation_folder),traces_f_str)
+    save_dff_path=os.path.join(os.path.normpath(save_folder_dff_raw),dff_f_str)
+    traces_path=os.path.join(os.path.normpath(save_folder_segmentation_raw),traces_f_str)
     compute_dff(traces_path,save_dff_path)
 
 def dff_detrended(filename,save_folder_segmentation_detrended,save_folder_dff_detrended):
@@ -119,6 +119,14 @@ def transparent_cells(filename,roi_folder,dff_folder):
     rois_f_str=f_str.replace('aligned.h5','rois.npy')
     roi_path=os.path.join(os.path.normpath(roi_folder),rois_f_str)
     run_transparent_cells(filename,roi_path,dff_path)
+
+def complete_viz_raw(filename, roi_folder,dff_folder):
+    f_str=os.path.split(filename)[-1]
+    dff_f_str=f_str.replace('aligned.h5','raw_dff.npy')
+    dff_path=os.path.join(os.path.normpath(dff_folder),dff_f_str)
+    rois_f_str=f_str.replace('aligned.h5','raw_rois.npy')
+    roi_path=os.path.join(os.path.normpath(roi_folder),rois_f_str)
+    run_complete_viz(filename,roi_path,dff_path)
 
 #Detrending
 #save_folder_detrending,save_folder_segmentation,save_folder_dff,save_folder_rastermap

@@ -1,3 +1,8 @@
 filepath //ZMN-HIVE/User-Data/Maria/check_registration/amphetamine/fish44_6dpf_amph_aligned.h5
 save_folder_mask //ZMN-HIVE/User-Data/Maria/masked
 save_folder_masked //ZMN-HIVE/User-Data/Maria/masked
+save_folder_detrending //ZMN-HIVE/User-Data/Maria/detrended
+save_folder_segmentation_detrended //ZMN-HIVE/User-Data/Maria/segmented
+save_folder_segmentation_raw //ZMN-HIVE/User-Data/Maria/segmented
+save_folder_dff_raw //ZMN-HIVE/User-Data/Maria/dff
+save_folder_dff_detrended //ZMN-HIVE/User-Data/Maria/dff

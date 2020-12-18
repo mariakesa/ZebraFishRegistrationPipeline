@@ -3,7 +3,7 @@ import os
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow,QLabel
 import pyqtgraph as pg
-from master_script import masking, detrending, segment_detrended, segment_raw, dff_raw, dff_detrended
+from master_script import masking, detrending, segment_detrended, segment_raw, dff_raw, dff_detrended, complete_viz_raw
 from PyQt5 import QtGui
 from matplotlib.colors import hsv_to_rgb
 from matplotlib import cm
@@ -12,6 +12,7 @@ import numpy as np
 import matplotlib
 sys.path.insert(0, 'C:/Users/koester_lab/Documents/Maria/ZebraFishRegistrationPipeline/Visualization')
 from detrending_viz import detrending_verify
+
 
 def parse_config_file(config_file):
     config_file=open(config_file,"r")
@@ -88,6 +89,11 @@ class PressToSelectButton(QLabel):
             self.mainw.config_dict['save_folder_segmentation_detrended'],
             self.mainw.config_dict['save_folder_dff_detrended'])
 
+        if self.type=='complete_viz_raw':
+            complete_viz_raw(self.mainw.config_dict['filepath'],
+            self.mainw.config_dict['save_folder_segmentation_raw'],
+            self.mainw.config_dict['save_folder_dff_raw'])
+
 
 class PilotGUI(QMainWindow):
     def __init__(self, config_file=''):
@@ -138,6 +144,10 @@ class PilotGUI(QMainWindow):
         color_ind=200
         self.dff_detrended_button=PressToSelectButton('Calculate dff detrended','dff_detrended',self,color_ind)
         self.l0.addWidget(self.dff_detrended_button,32,0)
+
+        color_ind=100
+        self.complete_viz_raw_button=PressToSelectButton('dff viz raw','complete_viz_raw',self,color_ind)
+        self.l0.addWidget(self.complete_viz_raw_button,28,6)
 
     def menu_config_load(self):
         self.main_menu=self.menuBar()

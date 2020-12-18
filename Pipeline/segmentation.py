@@ -100,3 +100,4 @@ def segmentation(data_path,save_path_std,save_path_roi,save_path_traces):
     traces = get_traces(stack, rois, use_radius=5)
     print('Saving traces...')
     np.save(save_path_traces, traces)
+    print('Done with saving the files!')
