@@ -3408,6 +3408,7 @@ def motion_correct_batch_pwrigid(fname, max_shifts, strides, overlaps, add_to_mo
                 y_shifts.append(np.array([sh[1] for sh in total_shift]))
                 coord_shifts.append(xy_grid)
 
+    self.save_file=f_name_tot_els
     return fname_tot_els, total_template, templates, x_shifts, y_shifts, z_shifts, coord_shifts
 
 
@@ -4551,9 +4552,8 @@ def load_memmap(filename: str, mode: str = 'r') -> Tuple[Any, Tuple, int]:
 
 def reg_pipeline(lif_filename,h5_filename,reg_file):
 
-    data_processor=Pyfish(lif_filename, h5_filename)
-
-    convert_lif_to_h5(lif_filename,h5_filename)
+    #data_processor=Pyfish(lif_filename, h5_filename)
+    #data_processor.save_hdf5()
 
     max_shifts = (6, 6,6)  # maximum allowed rigid shift in pixels (view the movie to get a sense of motion)
     strides =  (48, 48)  # create a new patch every x pixels for pw-rigid correction
@@ -4571,19 +4571,23 @@ def reg_pipeline(lif_filename,h5_filename,reg_file):
                       shifts_opencv=shifts_opencv, nonneg_movie=True,
                       border_nan=border_nan,is3D=is_3D)
 
+    print('Starting Motion Correction!')
     start=time.time()
     mc.motion_correct(save_movie=True)
     end=time.time()
     print('time to motion correct: ', end-start)
-    border_to_0 = np.ceil(np.max(mc.shifts_rig)).astype(np.int)
-    base_name=os.environ["TMPDIR"]+"/"+mc.fname_tot_rig.split('/')[-1][:-4]
-    fname_new = cm.save_memmap([mc.fname_tot_rig], base_name=base_name+'b', border_to_0=border_to_0)
+    #border_to_0 = np.ceil(np.max(mc.shifts_rig)).astype(np.int)
+    #base_name=os.environ["TMPDIR"]+"/"+mc.fname_tot_rig.split('/')[-1][:-4]
+    #fname_new = cm.save_memmap([mc.fname_tot_rig], base_name=base_name+'b', border_to_0=border_to_0)
+    import os
+    fname_new=os.path.abspath(mc.save_file)
     Yr,dims,T=load_memmap(fname_new)
     Y=np.reshape(Yr,dims+(T,),order='F')
     tr=np.transpose(Y,(3,0,1,2))
+    print('Saving registered file!')
     dd.io.save(reg_file, tr, None)
 
-lif_filename=
+lif_filename='//ZMN-HIVE/User-Data/Maria/control/fish11_6dpf_medium.lif'
 h5_filename='//ZMN-HIVE/User-Data/Maria/hdf5_conversion/fish11_6dpf_medium.h5'
-reg_file=
+reg_file='//ZMN-HIVE/User-Data/Maria/Caiman_MC/fish11_6dpf_medium_cm.h5'
 reg_pipeline(lif_filename,h5_filename,reg_file)
