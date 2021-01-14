@@ -74,7 +74,9 @@ class MainWindow(QMainWindow):
         widget.setLayout(self.l0)
 
         #self.writer = imageio.get_writer('C:/Users/koester_lab/Documents/masked.gif')
-
+        self.save_gif=True
+        if self.save_gif:
+            self.writer = imageio.get_writer('C:/Users/koester_lab/Documents/persistent_activity.gif')
         self.timer_init()
 
     def timer_init(self):
@@ -88,14 +90,21 @@ class MainWindow(QMainWindow):
         self.canvas.image.set_data(self.canvas.raw_data[self.canvas.i,:,:])
         self.canvas.time_text.text=str(self.canvas.i)
         self.canvas.i+=1
-
+        if self.save_gif==True:
+            im=canvas.render()
+            self.writer.append_data(im)
         #im=canvas.render()
         #self.writer.append_data(im)
         if self.canvas.i>=self.canvas.raw_data.shape[0]:
             #self.writer.close()
             #import sys
             #sys.exit()
-            self.canvas.i=0
+            if self.save_gif:
+                self.writer.close()
+                import sys
+                sys.exit()
+            else:
+                self.canvas.i=0
 
         self.canvas.update()
 

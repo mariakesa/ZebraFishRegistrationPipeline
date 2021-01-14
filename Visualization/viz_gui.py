@@ -58,7 +58,7 @@ class Canvas(scene.SceneCanvas):
 
         self.unfreeze()
 
-        self.plane_ind=0
+        self.plane_ind=20
 
         self.i=0
         self.aligned_path=aligned_path
@@ -84,6 +84,9 @@ class Canvas(scene.SceneCanvas):
         self.colorbar=scene.visuals.ColorBar(clim=(-1,2),cmap=colormap,orientation='right',size=(100,30),label_str='dF/F',parent=self.view.scene,pos=(100,100),label_color='white')
 
         self.colorbar.label.font_size = 10
+
+        self.time_text=scene.visuals.Text(str(self.i),color='white',font_size=25,pos=(900,100),bold=True,parent=self.view.scene)
+
         #self.colorbar.draw()
         #self.time=0
 
@@ -138,13 +141,17 @@ class MainWindow(QMainWindow):
         self.pl_ind_box.returnPressed.connect(lambda: self.change_plane_ind())
         widget.setLayout(self.l0)
 
+        self.save_gif=True
+        if self.save_gif:
+            self.writer = imageio.get_writer('C:/Users/koester_lab/Documents/persistent_activity.gif')
+
         self.timer_init()
 
     def timer_init(self):
         self.timer = vispy.app.Timer()
         self.timer.connect(self.update)
         self.timer.start(0)
-        self.timer.interval=0.1
+        self.timer.interval=0.001
         self.canvas.i=0
 
     def update(self,ev):
@@ -152,13 +159,23 @@ class MainWindow(QMainWindow):
         colors=vispy.color.ColorArray(cm,alpha=0.8)
         self.canvas.p1.set_data(self.canvas.rois_plane[:,:2], face_color=colors, symbol='o', size=8,
             edge_width=0.5, edge_color='blue')
+        self.canvas.time_text.text=str(self.canvas.i)
         self.canvas.image.set_data(self.canvas.raw_data[self.canvas.i,:,:])
         self.canvas.update()
         #print(canvas.raw_data[canvas.i,:,:])
         print(self.canvas.i)
+        if self.save_gif==True:
+            im=self.canvas.render()
+            self.writer.append_data(im)
         self.canvas.i+=1
-        if self.canvas.i>=self.canvas.raw_data.shape[0]:
-            self.canvas.i=0
+        #if self.canvas.i>=self.canvas.raw_data.shape[0]:
+        if self.canvas.i>=800:
+            if self.save_gif:
+                self.writer.close()
+                import sys
+                sys.exit()
+            else:
+                self.canvas.i=0
 
     def change_plane_ind(self):
         self.canvas.plane_ind=int(self.pl_ind_box.text())
