@@ -66,11 +66,14 @@ class Canvas(scene.SceneCanvas):
         scene.SceneCanvas.__init__(self,keys='interactive', size=(1024, 1024))
         self.unfreeze()
 
-        self.pos=[]
+        self.pos=np.array([[0,0]])
+        self.colors=[0,0,0,1]
         self.index = 0
-        self.markers = visuals.MarkersVisual()
+        #self.markers = visuals.MarkersVisual()
+        #self.markers=scene.visuals.Markers(pos=pos, parent=wc_2.scene, face_color='blue')
+
         #self.markers.set_data(self.pos, face_color=self.colors)
-        #self.markers.symbol = visuals.marker_types[self.index]
+        #self.markers.symbol = visuals.marker_types[10]
         #self.markers.transform = STTransform()
         self.plane_ind=0
         self.filename='//ZMN-HIVE/User-Data/Maria/Caiman_MC/fish11_6dpf_medium_aligned.h5'
@@ -79,8 +82,9 @@ class Canvas(scene.SceneCanvas):
 
         self.view=self.central_widget.add_view()
 
-        self.image=scene.visuals.Image(self.im, parent=self.view.scene, cmap='bwr',clim=[0,255])
+        self.image=scene.visuals.Image(self.im, parent=self.view.scene, cmap='hsv',clim=[0,255])
         self.image.set_gl_state('translucent', depth_test=False)
+        self.markers=scene.visuals.Markers(pos=self.pos, parent=self.view.scene, face_color='blue')
 
 
     def load_image(self):
@@ -93,12 +97,12 @@ class Canvas(scene.SceneCanvas):
             end=time.time()
             print('Time to load raw data file: ',end-start)
             print(np.max(self.im))
-            self.im[self.im>255]=200
-            self.im=np.array(self.im)
-            print(np.max(self.im))
-            print(np.min(self.im))
+            #self.im[self.im>255]=200
+            #self.im=np.array(self.im)
+            #print(np.max(self.im))
+            #print(np.min(self.im))
 
-'''
+
     def print_mouse_event(self, event, what):
         """ print mouse events for debugging purposes """
         print('%s - pos: %r, button: %s,  delta: %r' %
@@ -107,11 +111,11 @@ class Canvas(scene.SceneCanvas):
         self.print_mouse_event(event, 'Mouse press')
         self.pos=np.vstack((self.pos,event.pos))
         print(self.pos)
-        print(event.pos)
-        self.colors = np.vstack((self.colors,(100/500, 1.0-100/500, 0, 1)))
-        self.markers.set_data(self.pos, face_color=self.colors)
+        self.colors = np.vstack((self.colors,(153/255, 255/255, 255/255, 1)))
+        print(self.colors)
+        self.markers.set_data(self.pos, face_color=self.colors,size=15)
         self.update()
-'''
+
 class MainWindow(QMainWindow):
     def __init__(self, canvas=None,parent=None):
         super(MainWindow, self).__init__(parent)
