@@ -71,6 +71,7 @@ class Canvas(scene.SceneCanvas):
         self.pos=np.array([[0,0]])
         self.colors=[0,0,0,1]
         self.index = 0
+
         #self.markers = visuals.MarkersVisual()
         #self.markers=scene.visuals.Markers(pos=pos, parent=wc_2.scene, face_color='blue')
 
@@ -106,7 +107,7 @@ class Canvas(scene.SceneCanvas):
             #print(np.min(self.im))
 
     def make_nr(self):
-        nr=scene.visuals.Text(str(self.i),color='blue',font_size=10,
+        nr=scene.visuals.Text(str(self.i),color='blue',font_size=0,
             pos=self.pos[-1]+[20,-20],bold=True,parent=self.view.scene)
         self.nrs.append(nr)
 
@@ -128,13 +129,13 @@ class Canvas(scene.SceneCanvas):
         self.update()
 
 class MainWindow(QMainWindow):
-    def __init__(self, canvas=None,parent=None):
+    def __init__(self, canvas_image=None,canvas_atlas=None,parent=None):
         super(MainWindow, self).__init__(parent)
-        self.canvas=canvas
+        self.canvas_image=canvas_image
         widget = QWidget()
         self.setCentralWidget(widget)
         self.l0 = QGridLayout()
-        self.l0.addWidget(self.canvas.native)
+        self.l0.addWidget(self.canvas_image.native)
         self.slider_image = QSlider()
         self.slider_image.setOrientation(Qt.Horizontal)
         self.slider_image.setRange(0,20)
@@ -144,6 +145,10 @@ class MainWindow(QMainWindow):
 
     def slider_image_val_changed(self):
         print('slider nr:', self.slider_image.tickPosition(),self.slider_image.value())
+        self.canvas_image.plane_ind=self.slider_image.value()
+        self.canvas_image.load_image()
+        self.canvas_image.image.set_data(self.canvas_image.im)
+        self.canvas_image.update()
 
 
 
