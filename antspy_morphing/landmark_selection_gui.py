@@ -32,7 +32,7 @@ import h5py
 import imageio
 from vispy import visuals
 
-from PyQt5.QtWidgets import QApplication, QMainWindow
+from PyQt5.QtWidgets import QApplication, QMainWindow, QSlider
 import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -60,12 +60,14 @@ from vispy import visuals
 
 import matplotlib.pyplot as plt
 
+from PyQt5.QtCore import Qt
+
 class Canvas(scene.SceneCanvas):
 
     def __init__(self):
         scene.SceneCanvas.__init__(self,keys='interactive', size=(1024, 1024))
         self.unfreeze()
-
+        self.i=0
         self.pos=np.array([[0,0]])
         self.colors=[0,0,0,1]
         self.index = 0
@@ -85,6 +87,7 @@ class Canvas(scene.SceneCanvas):
         self.image=scene.visuals.Image(self.im, parent=self.view.scene, cmap='hsv',clim=[0,255])
         self.image.set_gl_state('translucent', depth_test=False)
         self.markers=scene.visuals.Markers(pos=self.pos, parent=self.view.scene, face_color='blue')
+        self.nrs=[]
 
 
     def load_image(self):
@@ -102,6 +105,12 @@ class Canvas(scene.SceneCanvas):
             #print(np.max(self.im))
             #print(np.min(self.im))
 
+    def make_nr(self):
+        nr=scene.visuals.Text(str(self.i),color='blue',font_size=10,
+            pos=self.pos[-1]+[20,-20],bold=True,parent=self.view.scene)
+        self.nrs.append(nr)
+
+
 
     def print_mouse_event(self, event, what):
         """ print mouse events for debugging purposes """
@@ -114,6 +123,8 @@ class Canvas(scene.SceneCanvas):
         self.colors = np.vstack((self.colors,(153/255, 255/255, 255/255, 1)))
         print(self.colors)
         self.markers.set_data(self.pos, face_color=self.colors,size=15)
+        self.make_nr()
+        self.i+=1
         self.update()
 
 class MainWindow(QMainWindow):
@@ -124,7 +135,16 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(widget)
         self.l0 = QGridLayout()
         self.l0.addWidget(self.canvas.native)
+        self.slider_image = QSlider()
+        self.slider_image.setOrientation(Qt.Horizontal)
+        self.slider_image.setRange(0,20)
+        self.slider_image.valueChanged.connect(self.slider_image_val_changed)
+        self.l0.addWidget(self.slider_image)
         widget.setLayout(self.l0)
+
+    def slider_image_val_changed(self):
+        print('slider nr:', self.slider_image.tickPosition(),self.slider_image.value())
+
 
 
 canvas = Canvas()
