@@ -85,12 +85,6 @@ class Canvas(scene.SceneCanvas):
             self.nrs_dict[j]=[]
             self.colors_dict[j]=[0,0,0,1]
 
-        #self.markers = visuals.MarkersVisual()
-        #self.markers=scene.visuals.Markers(pos=pos, parent=wc_2.scene, face_color='blue')
-
-        #self.markers.set_data(self.pos, face_color=self.colors)
-        #self.markers.symbol = visuals.marker_types[10]
-        #self.markers.transform = STTransform()
         self.plane_ind=0
         self.filename='//ZMN-HIVE/User-Data/Maria/Caiman_MC/fish11_6dpf_medium_aligned.h5'
         #self.filename='//ZMN-HIVE/User-Data/Maria/check_registration/control/fish11_6dpf_medium_aligned.h5'
@@ -98,7 +92,9 @@ class Canvas(scene.SceneCanvas):
         self.markers_dict={}
         for j in range(0,21):
             self.markers_dict[j]=scene.visuals.Markers(pos=self.pos_dict[self.plane_ind], parent=self.view.scene, face_color=self.colors_dict[self.plane_ind])
-            self.markers_dict[j].attach(Alpha(1))
+            #self.markers_dict[j].attach(Alpha(1))
+            transform = STTransform(translate=[0,0,-100])
+            self.markers_dict[j].transform = transform
         #transform = STTransform(translate=[0,0,-100])
         #self.markers.transform = transform
         self.nrs=[]
@@ -131,7 +127,7 @@ class Canvas(scene.SceneCanvas):
     def make_nr(self):
         nr=scene.visuals.Text(str(self.i),color='blue',font_size=10,
             pos=self.pos_dict[self.plane_ind][-1]+[20,-20],bold=True,parent=self.view.scene)
-        self.nrs.append(nr)
+        self.nrs_dict[self.plane_ind].append(nr)
 
 
 
@@ -173,12 +169,16 @@ class MainWindow(QMainWindow):
     def slider_image_val_changed(self):
         print('slider nr:', self.slider_image.tickPosition(),self.slider_image.value())
         self.canvas_image.markers_dict[self.prev_ind].visible=False
+        for nr in self.canvas_image.nrs_dict[self.prev_ind]:
+            nr.visible=False
         self.canvas_image.plane_ind=self.slider_image.value()
         self.canvas_image.load_image()
         self.canvas_image.image.set_data(self.canvas_image.im)
         self.canvas_image.image.set_gl_state('translucent', depth_test=False)
         self.canvas_image.markers_dict[self.canvas_image.plane_ind].set_data(self.canvas_image.pos_dict[self.canvas_image.plane_ind], face_color=self.canvas_image.colors_dict[self.canvas_image.plane_ind],size=15)
         self.canvas_image.markers_dict[self.canvas_image.plane_ind].visible=True
+        for nr in self.canvas_image.nrs_dict[self.canvas_image.plane_ind]:
+            nr.visible=True
         self.prev_ind=self.slider_image.value()
         self.canvas_image.update()
 
