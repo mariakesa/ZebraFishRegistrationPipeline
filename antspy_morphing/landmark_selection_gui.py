@@ -98,6 +98,7 @@ class Canvas(scene.SceneCanvas):
         self.markers_dict={}
         for j in range(0,21):
             self.markers_dict[j]=scene.visuals.Markers(pos=self.pos_dict[self.plane_ind], parent=self.view.scene, face_color=self.colors_dict[self.plane_ind])
+            self.markers_dict[j].attach(Alpha(1))
         #transform = STTransform(translate=[0,0,-100])
         #self.markers.transform = transform
         self.nrs=[]
@@ -128,9 +129,8 @@ class Canvas(scene.SceneCanvas):
             #print(np.min(self.im))
 
     def make_nr(self):
-        nr=scene.visuals.Text(str(self.i),color='blue',font_size=0,
+        nr=scene.visuals.Text(str(self.i),color='blue',font_size=10,
             pos=self.pos_dict[self.plane_ind][-1]+[20,-20],bold=True,parent=self.view.scene)
-        print(nr)
         self.nrs.append(nr)
 
 
