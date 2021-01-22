@@ -168,15 +168,18 @@ class MainWindow(QMainWindow):
         self.slider_image.valueChanged.connect(self.slider_image_val_changed)
         self.l0.addWidget(self.slider_image)
         widget.setLayout(self.l0)
+        self.prev_ind=0
 
     def slider_image_val_changed(self):
         print('slider nr:', self.slider_image.tickPosition(),self.slider_image.value())
+        self.canvas_image.markers_dict[self.prev_ind].visible=False
         self.canvas_image.plane_ind=self.slider_image.value()
         self.canvas_image.load_image()
         self.canvas_image.image.set_data(self.canvas_image.im)
         self.canvas_image.image.set_gl_state('translucent', depth_test=False)
         self.canvas_image.markers_dict[self.canvas_image.plane_ind].set_data(self.canvas_image.pos_dict[self.canvas_image.plane_ind], face_color=self.canvas_image.colors_dict[self.canvas_image.plane_ind],size=15)
-
+        self.canvas_image.markers_dict[self.canvas_image.plane_ind].visible=True
+        self.prev_ind=self.slider_image.value()
         self.canvas_image.update()
 
 
