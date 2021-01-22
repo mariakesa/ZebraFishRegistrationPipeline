@@ -62,10 +62,6 @@ import matplotlib.pyplot as plt
 
 from PyQt5.QtCore import Qt
 
-from vispy.visuals.transforms import STTransform
-
-from vispy.visuals.filters import Alpha
-
 class Canvas(scene.SceneCanvas):
 
     def __init__(self):
@@ -76,15 +72,6 @@ class Canvas(scene.SceneCanvas):
         self.colors=[0,0,0,1]
         self.index = 0
 
-        self.pos_dict={}
-        self.nrs_dict={}
-        self.colors_dict={}
-
-        for j in range(0,21):
-            self.pos_dict[j]=np.array([[0,0]])
-            self.nrs_dict[j]=[]
-            self.colors_dict[j]=[0,0,0,1]
-
         #self.markers = visuals.MarkersVisual()
         #self.markers=scene.visuals.Markers(pos=pos, parent=wc_2.scene, face_color='blue')
 
@@ -94,22 +81,14 @@ class Canvas(scene.SceneCanvas):
         self.plane_ind=0
         self.filename='//ZMN-HIVE/User-Data/Maria/Caiman_MC/fish11_6dpf_medium_aligned.h5'
         #self.filename='//ZMN-HIVE/User-Data/Maria/check_registration/control/fish11_6dpf_medium_aligned.h5'
-        self.view=self.central_widget.add_view()
-        self.markers_dict={}
-        for j in range(0,21):
-            self.markers_dict[j]=scene.visuals.Markers(pos=self.pos_dict[self.plane_ind], parent=self.view.scene, face_color=self.colors_dict[self.plane_ind])
-        #transform = STTransform(translate=[0,0,-100])
-        #self.markers.transform = transform
-        self.nrs=[]
         self.load_image()
 
-        #self.view=self.central_widget.add_view()
+        self.view=self.central_widget.add_view()
 
         self.image=scene.visuals.Image(self.im, parent=self.view.scene, cmap='hsv',clim=[0,255])
         self.image.set_gl_state('translucent', depth_test=False)
-        self.image.attach(Alpha(0.4))
-        #self.markers=scene.visuals.Markers(pos=self.pos, parent=self.view.scene, face_color='blue')
-        #self.nrs=[]
+        self.markers=scene.visuals.Markers(pos=self.pos, parent=self.view.scene, face_color='blue')
+        self.nrs=[]
 
 
     def load_image(self):
@@ -129,8 +108,7 @@ class Canvas(scene.SceneCanvas):
 
     def make_nr(self):
         nr=scene.visuals.Text(str(self.i),color='blue',font_size=0,
-            pos=self.pos_dict[self.plane_ind][-1]+[20,-20],bold=True,parent=self.view.scene)
-        print(nr)
+            pos=self.pos[-1]+[20,-20],bold=True,parent=self.view.scene)
         self.nrs.append(nr)
 
 
@@ -141,17 +119,13 @@ class Canvas(scene.SceneCanvas):
               (what, event.pos, event.button, event.delta))
     def on_mouse_press(self, event):
         self.print_mouse_event(event, 'Mouse press')
-        self.pos_dict[self.plane_ind]=np.vstack((self.pos_dict[self.plane_ind],event.pos))
-        print('boom',self.pos_dict[self.plane_ind])
-        print(self.plane_ind)
-        self.colors_dict[self.plane_ind] = np.vstack((self.colors_dict[self.plane_ind],(153/255, 255/255, 255/255, 1)))
-        print(self.colors_dict[self.plane_ind])
-        self.markers_dict[self.plane_ind].set_data(self.pos_dict[self.plane_ind], face_color=self.colors_dict[self.plane_ind],size=15)
-        print(self.pos_dict[self.plane_ind])
-        print(self.markers_dict[self.plane_ind])
+        self.pos=np.vstack((self.pos,event.pos))
+        print(self.pos)
+        self.colors = np.vstack((self.colors,(153/255, 255/255, 255/255, 1)))
+        print(self.colors)
+        self.markers.set_data(self.pos, face_color=self.colors,size=15)
         self.make_nr()
         self.i+=1
-        print(self.i)
         self.update()
 
 class MainWindow(QMainWindow):
@@ -174,9 +148,6 @@ class MainWindow(QMainWindow):
         self.canvas_image.plane_ind=self.slider_image.value()
         self.canvas_image.load_image()
         self.canvas_image.image.set_data(self.canvas_image.im)
-        self.canvas_image.image.set_gl_state('translucent', depth_test=False)
-        self.canvas_image.markers_dict[self.canvas_image.plane_ind].set_data(self.canvas_image.pos_dict[self.canvas_image.plane_ind], face_color=self.canvas_image.colors_dict[self.canvas_image.plane_ind],size=15)
-
         self.canvas_image.update()
 
 
