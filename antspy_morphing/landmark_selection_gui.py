@@ -226,9 +226,15 @@ class MainWindow(QMainWindow):
         self.slider_image.setRange(0,20)
         self.slider_image.valueChanged.connect(self.slider_image_val_changed)
         self.l0.addWidget(self.slider_image,20,20,1,20)
+        self.voxelmorph_button=QPushButton('Run voxelmorph')
+        self.voxelmorph_button.clicked.connect(lambda: self.run_voxelmorph())
+        self.l0.addWidget(self.voxelmorph_button, 0,60,2,5)
         widget.setLayout(self.l0)
         self.prev_ind_image=0
         self.prev_ind_atlas=0
+
+    def run_voxelmorph(self):
+        pass
 
     def slider_image_val_changed(self):
         print('slider nr:', self.slider_image.tickPosition(),self.slider_image.value())
