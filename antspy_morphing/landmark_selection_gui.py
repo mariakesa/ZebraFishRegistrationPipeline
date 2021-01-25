@@ -68,9 +68,14 @@ from vispy.visuals.filters import Alpha
 
 class Canvas(scene.SceneCanvas):
 
-    def __init__(self):
-        scene.SceneCanvas.__init__(self,keys='interactive', size=(1024, 1024))
+    def __init__(self,filename,type):
+        scene.SceneCanvas.__init__(self, keys='interactive')
         self.unfreeze()
+        self.type=type
+        if self.type=='moving':
+            self.size=(1024,1406)
+        elif self.type=='atlas':
+            self.size=(621,1406)
         self.i=0
         self.pos=np.array([[0,0]])
         self.colors=[0,0,0,1]
@@ -86,19 +91,22 @@ class Canvas(scene.SceneCanvas):
             self.colors_dict[j]=[0,0,0,1]
 
         self.plane_ind=0
-        self.filename='//ZMN-HIVE/User-Data/Maria/Caiman_MC/fish11_6dpf_medium_aligned.h5'
+        self.filename=filename
         #self.filename='//ZMN-HIVE/User-Data/Maria/check_registration/control/fish11_6dpf_medium_aligned.h5'
         self.view=self.central_widget.add_view()
         self.markers_dict={}
         for j in range(0,21):
             self.markers_dict[j]=scene.visuals.Markers(pos=self.pos_dict[self.plane_ind], parent=self.view.scene, face_color=self.colors_dict[self.plane_ind])
             #self.markers_dict[j].attach(Alpha(1))
-            transform = STTransform(translate=[0,0,-100])
-            self.markers_dict[j].transform = transform
+            #transform = STTransform(translate=[0,0,-100])
+            #self.markers_dict[j].transform = transform
         #transform = STTransform(translate=[0,0,-100])
         #self.markers.transform = transform
         self.nrs=[]
-        self.load_image()
+        if self.type=='moving':
+            self.load_image()
+        if self.type=='atlas':
+            self.load_tif()
 
         #self.view=self.central_widget.add_view()
 
@@ -123,6 +131,15 @@ class Canvas(scene.SceneCanvas):
             #self.im=np.array(self.im)
             #print(np.max(self.im))
             #print(np.min(self.im))
+
+    def load_tif(self):
+        from PIL import Image
+        from scipy import ndimage
+        self.im = np.array(Image.open(self.filename))/20
+        self.im = ndimage.rotate(self.im, 270, reshape=True)
+        print(self.im)
+        print(self.im.shape)
+
 
     def make_nr(self):
         nr=scene.visuals.Text(str(self.i),color='blue',font_size=10,
@@ -153,11 +170,13 @@ class Canvas(scene.SceneCanvas):
 class MainWindow(QMainWindow):
     def __init__(self, canvas_image=None,canvas_atlas=None,parent=None):
         super(MainWindow, self).__init__(parent)
+        self.canvas_atlas=canvas_atlas
         self.canvas_image=canvas_image
         widget = QWidget()
         self.setCentralWidget(widget)
         self.l0 = QGridLayout()
-        self.l0.addWidget(self.canvas_image.native)
+        self.l0.addWidget(self.canvas_atlas.native,0,0,20,20)
+        self.l0.addWidget(self.canvas_image.native,0,20,20,20)
         self.slider_image = QSlider()
         self.slider_image.setOrientation(Qt.Horizontal)
         self.slider_image.setRange(0,20)
@@ -184,9 +203,10 @@ class MainWindow(QMainWindow):
 
 
 
-canvas = Canvas()
+canvas_image = Canvas(filename='//ZMN-HIVE/User-Data/Maria/Caiman_MC/fish11_6dpf_medium_aligned.h5',type='moving')
+canvas_atlas = Canvas(filename='C:/Users/koester_lab/Documents/Maria/ZebraFishRegistrationPipeline/Elavl3-H2BRFP.tif',type='atlas')
 vispy.use('PyQt5')
-w = MainWindow(canvas)
+w = MainWindow(canvas_image,canvas_atlas)
 w.show()
 vispy.app.run()
 
