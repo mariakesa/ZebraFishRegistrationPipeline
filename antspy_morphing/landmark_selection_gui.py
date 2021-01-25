@@ -66,6 +66,9 @@ from vispy.visuals.transforms import STTransform
 
 from vispy.visuals.filters import Alpha
 
+from PIL import Image
+from scipy import ndimage
+
 class Canvas(scene.SceneCanvas):
 
     def __init__(self,filename,type):
@@ -85,7 +88,12 @@ class Canvas(scene.SceneCanvas):
         self.nrs_dict={}
         self.colors_dict={}
 
-        for j in range(0,21):
+        if self.type=='moving':
+            self.n_planes=21
+        elif self.type=='atlas':
+            self.n_planes=138
+
+        for j in range(0,self.n_planes):
             self.pos_dict[j]=np.array([[0,0]])
             self.nrs_dict[j]=[]
             self.colors_dict[j]=[0,0,0,1]
@@ -95,7 +103,7 @@ class Canvas(scene.SceneCanvas):
         #self.filename='//ZMN-HIVE/User-Data/Maria/check_registration/control/fish11_6dpf_medium_aligned.h5'
         self.view=self.central_widget.add_view()
         self.markers_dict={}
-        for j in range(0,21):
+        for j in range(0,self.n_planes):
             self.markers_dict[j]=scene.visuals.Markers(pos=self.pos_dict[self.plane_ind], parent=self.view.scene, face_color=self.colors_dict[self.plane_ind])
             #self.markers_dict[j].attach(Alpha(1))
             #transform = STTransform(translate=[0,0,-100])
@@ -106,6 +114,7 @@ class Canvas(scene.SceneCanvas):
         if self.type=='moving':
             self.load_image()
         if self.type=='atlas':
+            self.load_entire_tif()
             self.load_tif()
 
         #self.view=self.central_widget.add_view()
@@ -132,13 +141,23 @@ class Canvas(scene.SceneCanvas):
             #print(np.max(self.im))
             #print(np.min(self.im))
 
+    def load_entire_tif(self):
+        dataset = Image.open(self.filename)
+        h,w = np.shape(dataset)
+        tiffarray = np.zeros((h,w,dataset.n_frames))
+        for i in range(dataset.n_frames):
+           dataset.seek(i)
+           tiffarray[:,:,i] = np.array(dataset)
+        self.expim = tiffarray.astype(np.double)
+        print(self.expim.shape)
+
     def load_tif(self):
-        from PIL import Image
-        from scipy import ndimage
-        self.im = np.array(Image.open(self.filename))/20
+        self.im=self.expim[:,:,self.plane_ind]
         self.im = ndimage.rotate(self.im, 270, reshape=True)
-        print(self.im)
-        print(self.im.shape)
+        self.im=self.im/20
+        #self.im = ndimage.rotate(self.im, 270, reshape=True)
+        #print(self.im)
+        #print(self.im.shape)
 
 
     def make_nr(self):
@@ -177,18 +196,24 @@ class MainWindow(QMainWindow):
         self.l0 = QGridLayout()
         self.l0.addWidget(self.canvas_atlas.native,0,0,20,20)
         self.l0.addWidget(self.canvas_image.native,0,20,20,20)
+        self.slider_atlas = QSlider()
+        self.slider_atlas.setOrientation(Qt.Horizontal)
+        self.slider_atlas.setRange(0,137)
+        self.slider_atlas.valueChanged.connect(self.slider_atlas_val_changed)
+        self.l0.addWidget(self.slider_atlas,20,0,1,20)
         self.slider_image = QSlider()
         self.slider_image.setOrientation(Qt.Horizontal)
         self.slider_image.setRange(0,20)
         self.slider_image.valueChanged.connect(self.slider_image_val_changed)
-        self.l0.addWidget(self.slider_image)
+        self.l0.addWidget(self.slider_image,20,20,1,20)
         widget.setLayout(self.l0)
-        self.prev_ind=0
+        self.prev_ind_image=0
+        self.prev_ind_atlas=0
 
     def slider_image_val_changed(self):
         print('slider nr:', self.slider_image.tickPosition(),self.slider_image.value())
-        self.canvas_image.markers_dict[self.prev_ind].visible=False
-        for nr in self.canvas_image.nrs_dict[self.prev_ind]:
+        self.canvas_image.markers_dict[self.prev_ind_image].visible=False
+        for nr in self.canvas_image.nrs_dict[self.prev_ind_image]:
             nr.visible=False
         self.canvas_image.plane_ind=self.slider_image.value()
         self.canvas_image.load_image()
@@ -198,9 +223,24 @@ class MainWindow(QMainWindow):
         self.canvas_image.markers_dict[self.canvas_image.plane_ind].visible=True
         for nr in self.canvas_image.nrs_dict[self.canvas_image.plane_ind]:
             nr.visible=True
-        self.prev_ind=self.slider_image.value()
+        self.prev_ind_image=self.slider_image.value()
         self.canvas_image.update()
 
+    def slider_atlas_val_changed(self):
+        print('slider nr:', self.slider_atlas.tickPosition(),self.slider_atlas.value())
+        self.canvas_atlas.markers_dict[self.prev_ind_atlas].visible=False
+        for nr in self.canvas_atlas.nrs_dict[self.prev_ind_atlas]:
+            nr.visible=False
+        self.canvas_atlas.plane_ind=self.slider_atlas.value()
+        self.canvas_atlas.load_tif()
+        self.canvas_atlas.image.set_data(self.canvas_atlas.im)
+        self.canvas_atlas.image.set_gl_state('translucent', depth_test=False)
+        self.canvas_atlas.markers_dict[self.canvas_atlas.plane_ind].set_data(self.canvas_atlas.pos_dict[self.canvas_atlas.plane_ind], face_color=self.canvas_atlas.colors_dict[self.canvas_atlas.plane_ind],size=15)
+        self.canvas_atlas.markers_dict[self.canvas_atlas.plane_ind].visible=True
+        for nr in self.canvas_atlas.nrs_dict[self.canvas_atlas.plane_ind]:
+            nr.visible=True
+        self.prev_ind_atlas=self.slider_atlas.value()
+        self.canvas_image.update()
 
 
 canvas_image = Canvas(filename='//ZMN-HIVE/User-Data/Maria/Caiman_MC/fish11_6dpf_medium_aligned.h5',type='moving')
