@@ -125,6 +125,15 @@ class Canvas(scene.SceneCanvas):
         #self.markers=scene.visuals.Markers(pos=self.pos, parent=self.view.scene, face_color='blue')
         #self.nrs=[]
 
+    def load_entire_image(self):
+        with h5py.File(self.filename, "r") as f:
+            # List all groups
+            print("Loading raw data from a plane...")
+            start=time.time()
+            self.im_to_morph=f['data'][0,:,:,:].astype('float32')
+            end=time.time()
+            print('Time to load raw data file: ',end-start)
+            print(np.max(self.im))
 
     def load_image(self):
         with h5py.File(self.filename, "r") as f:
@@ -148,12 +157,13 @@ class Canvas(scene.SceneCanvas):
         for i in range(dataset.n_frames):
            dataset.seek(i)
            tiffarray[:,:,i] = np.array(dataset)
-        self.expim = tiffarray.astype(np.double)
-        print(self.expim.shape)
+        self.stack = tiffarray.astype(np.double)
+        self.rotated_stack=np.zeros((1406,621,138))
+        for j in range(0,self.stack.shape[2]):
+            self.rotated_stack[:,:,j] = ndimage.rotate(self.stack[:,:,j], 270, reshape=True)
 
     def load_tif(self):
-        self.im=self.expim[:,:,self.plane_ind]
-        self.im = ndimage.rotate(self.im, 270, reshape=True)
+        self.im=self.rotated_stack[:,:,self.plane_ind]
         self.im=self.im/20
         #self.im = ndimage.rotate(self.im, 270, reshape=True)
         #print(self.im)
