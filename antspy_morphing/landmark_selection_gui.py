@@ -125,7 +125,7 @@ class Canvas(scene.SceneCanvas):
         #self.markers=scene.visuals.Markers(pos=self.pos, parent=self.view.scene, face_color='blue')
         #self.nrs=[]
 
-    def load_entire_image(self):
+    def load_entire_stack(self):
         with h5py.File(self.filename, "r") as f:
             # List all groups
             print("Loading raw data from a plane...")
