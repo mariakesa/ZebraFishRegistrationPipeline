@@ -186,16 +186,36 @@ class Canvas(scene.SceneCanvas):
         print(self.i)
         self.update()
 
+class MorphCanvas(scene.SceneCanvas):
+
+    def __init__(self):
+        scene.SceneCanvas.__init__(self, keys='interactive')
+        self.unfreeze()
+        self.size=(621,1406)
+        self.blank_screen()
+
+        self.view=self.central_widget.add_view()
+        self.image=scene.visuals.Image(self.im, parent=self.view.scene, cmap='hsv',clim=[0,255])
+        self.image.set_gl_state('translucent', depth_test=False)
+        self.image.attach(Alpha(0.4))
+
+    def blank_screen(self):
+        self.im=np.zeros((621,1406)).T
+
+
+
 class MainWindow(QMainWindow):
-    def __init__(self, canvas_image=None,canvas_atlas=None,parent=None):
+    def __init__(self, canvas_image=None,canvas_atlas=None,canvas_morph=None,parent=None):
         super(MainWindow, self).__init__(parent)
         self.canvas_atlas=canvas_atlas
         self.canvas_image=canvas_image
+        self.canvas_morph=canvas_morph
         widget = QWidget()
         self.setCentralWidget(widget)
         self.l0 = QGridLayout()
         self.l0.addWidget(self.canvas_atlas.native,0,0,20,20)
         self.l0.addWidget(self.canvas_image.native,0,20,20,20)
+        self.l0.addWidget(self.canvas_morph.native,0,40,20,20)
         self.slider_atlas = QSlider()
         self.slider_atlas.setOrientation(Qt.Horizontal)
         self.slider_atlas.setRange(0,137)
@@ -245,8 +265,9 @@ class MainWindow(QMainWindow):
 
 canvas_image = Canvas(filename='//ZMN-HIVE/User-Data/Maria/Caiman_MC/fish11_6dpf_medium_aligned.h5',type='moving')
 canvas_atlas = Canvas(filename='C:/Users/koester_lab/Documents/Maria/ZebraFishRegistrationPipeline/Elavl3-H2BRFP.tif',type='atlas')
+canvas_morph = MorphCanvas()
 vispy.use('PyQt5')
-w = MainWindow(canvas_image,canvas_atlas)
+w = MainWindow(canvas_image,canvas_atlas,canvas_morph)
 w.show()
 vispy.app.run()
 
